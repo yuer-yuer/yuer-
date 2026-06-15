@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slow-slim-pwa-v22';
+const CACHE_NAME = 'slow-slim-pwa-v29';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -9,6 +9,7 @@ const APP_SHELL = [
   '/js/ai-coach-rules.js',
   '/js/food-db.js',
   '/js/food-images.js',
+  '/js/can-i-eat-calorie.js',
   '/js/exercise-db.js',
   '/icons/icon.svg',
   '/icons/maskable-icon.svg',

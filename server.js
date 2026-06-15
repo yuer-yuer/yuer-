@@ -3,6 +3,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
+const { execFile } = require('child_process');
 const Database = require('better-sqlite3');
 const {
   buildCoachSystemPrompt,
@@ -10,6 +11,15 @@ const {
   getCoachQuickPrompts,
   sanitizeCoachMessages,
 } = require('./lib/coach-core');
+const { buildCanIEatAnalysis } = require('./lib/fat-loss-sandbox');
+const {
+  findLocalFoodCalorieEstimate,
+  sanitizeCalorieEstimate,
+} = require('./lib/food-calorie-estimator');
+const {
+  chunkText,
+  extractZhipuStreamDelta,
+} = require('./lib/coach-stream');
 
 function loadEnvFile() {
   const envPath = path.join(__dirname, '.env');
@@ -155,6 +165,7 @@ const profileColumns = [
   { name: 'reminder_water_enabled', type: 'INTEGER', defaultValue: '0' },
   { name: 'reminder_exercise', type: 'TEXT', defaultValue: "'18:00'" },
   { name: 'reminder_exercise_enabled', type: 'INTEGER', defaultValue: '0' },
+  { name: 'onboarded', type: 'INTEGER', defaultValue: '0' },
 ];
 
 profileColumns.forEach(col => {
@@ -416,6 +427,27 @@ async function callAliyunVision(config, image) {
     || data.output?.choices?.[0]?.message?.content;
 }
 
+async function callZhipuFoodCalorieEstimate(config, foodName) {
+  const response = await fetch(config.url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${config.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: config.chatModel || 'glm-4-flash',
+      messages: [{
+        role: 'user',
+        content: `请估算“${foodName}”常见做法每100克的热量。只返回JSON，不要Markdown。格式：{"food_name":"食物名","calories_per_100g":数字,"confidence":0到1,"note":"一句估算依据"}`,
+      }],
+      temperature: 0.1,
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || data.message || 'AI估算失败');
+  return data.choices?.[0]?.message?.content;
+}
+
 function calcServerTargets(profile) {
   if (!profile) return { caloriesIn: 1500, caloriesOut: 300 };
   const weight = Number(profile.weight) || 70;
@@ -437,6 +469,46 @@ function calcServerTargets(profile) {
     caloriesIn: Math.max(1200, Math.round(tdee - 500)),
     caloriesOut: 300,
   };
+}
+
+function activityLevelToEngineValue(level) {
+  const map = {
+    sedentary: 1,
+    light: 2,
+    moderate: 3,
+    heavy: 4,
+    active: 4,
+    very_active: 5,
+  };
+  if (typeof level === 'number') return level;
+  return map[level] || 1;
+}
+
+function getEnginePath() {
+  if (process.platform === 'win32') {
+    const releasePath = path.join(__dirname, 'cpp_engine', 'build', 'Release', 'calc_engine.exe');
+    if (fs.existsSync(releasePath)) return releasePath;
+    return path.join(__dirname, 'cpp_engine', 'build', 'calc_engine.exe');
+  }
+  return path.join(__dirname, 'cpp_engine', 'build', 'calc_engine');
+}
+
+function callCalcEngine(inputData) {
+  return new Promise((resolve, reject) => {
+    const proc = execFile(getEnginePath(), [], { timeout: 5000 }, (error, stdout) => {
+      if (error) {
+        reject(new Error(`引擎调用失败: ${error.message}`));
+        return;
+      }
+      try {
+        resolve(JSON.parse(stdout));
+      } catch (e) {
+        reject(new Error(`结果解析失败: ${stdout}`));
+      }
+    });
+    proc.stdin.write(JSON.stringify(inputData));
+    proc.stdin.end();
+  });
 }
 
 function getCoachCheckin(uid) {
@@ -508,6 +580,132 @@ async function callZhipuCoach(config, snapshot, messages) {
   return String(content).trim().slice(0, 1200);
 }
 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function startCoachTextStream(res) {
+  res.status(200);
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  if (typeof res.flushHeaders === 'function') res.flushHeaders();
+}
+
+async function streamLocalCoachReply(res, text) {
+  for (const chunk of chunkText(text, 8)) {
+    res.write(chunk);
+    await delay(28);
+  }
+}
+
+async function callZhipuCoachStream(config, snapshot, messages, onDelta) {
+  const response = await fetch(config.url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${config.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: config.chatModel || 'glm-4-flash',
+      messages: [
+        { role: 'system', content: buildCoachSystemPrompt(snapshot) },
+        ...messages,
+      ],
+      temperature: 0.65,
+      max_tokens: 500,
+      stream: true,
+    }),
+  });
+
+  if (!response.ok) {
+    let message = '灏忕槮鏆傛椂杩炰笉涓夾I';
+    try {
+      const data = await response.json();
+      message = data.error?.message || data.message || message;
+    } catch {
+      // Keep the generic message when the provider returns non-JSON.
+    }
+    throw new Error(message);
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let received = false;
+  for await (const bytes of response.body) {
+    buffer += decoder.decode(bytes, { stream: true });
+    const parts = buffer.split(/\r?\n\r?\n/);
+    buffer = parts.pop() || '';
+    for (const part of parts) {
+      for (const delta of extractZhipuStreamDelta(part)) {
+        received = true;
+        onDelta(delta);
+      }
+    }
+  }
+
+  buffer += decoder.decode();
+  for (const delta of extractZhipuStreamDelta(buffer)) {
+    received = true;
+    onDelta(delta);
+  }
+  if (!received) throw new Error('灏忕槮娌℃湁鐢熸垚鍥炲');
+}
+
+function buildLocalCanIEatCopy(analysis) {
+  const lines = [analysis.eatPlan.summary];
+  if (analysis.budget.overBy > 0) {
+    const walk = analysis.rescuePlan.exercises.find(item => item.name === '快走') || analysis.rescuePlan.exercises[0];
+    if (walk) lines.push(`如果照吃，饭后${walk.name}${walk.minutes}分钟左右可以把缺口补回来。`);
+  }
+  if (analysis.swapPlan?.reduceAmount) {
+    const reduce = analysis.swapPlan.reduceAmount;
+    lines.push(`${reduce.foodName}可以从${reduce.originalAmountG}g减到${reduce.suggestedAmountG}g，大约少${reduce.savedCalories}kcal。`);
+  }
+  return lines.join('\n');
+}
+
+async function callZhipuCanIEatCopy(config, snapshot, analysis) {
+  const response = await fetch(config.url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${config.apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: config.chatModel || 'glm-4-flash',
+      messages: [
+        {
+          role: 'system',
+          content: [
+            '你是减脂私教“小瘦”。请根据结构化结果写一段简短、克制、可执行的中文建议。',
+            '不要编造新的热量数字，不要给医疗建议，不要保证减重结果。',
+            '输出 2-4 句，语气像专业教练，允许温和但不要夸张。',
+          ].join('\n'),
+        },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            user: {
+              weight: snapshot.profile?.weight,
+              target_weight: snapshot.profile?.target_weight,
+              todayFoodCount: snapshot.todayFood?.length || 0,
+            },
+            analysis,
+          }),
+        },
+      ],
+      temperature: 0.55,
+      max_tokens: 260,
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error?.message || data.message || '小瘦暂时无法生成建议');
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('小瘦没有生成建议');
+  return String(content).trim().slice(0, 600);
+}
+
 // ─── 认证 API ────────────────────────────────────────
 
 app.post('/api/auth/register', async (req, res) => {
@@ -570,6 +768,19 @@ app.get('/api/auth/me', (req, res) => {
   res.json(ok({ id: req.session.userId, username: req.session.username }));
 });
 
+app.post('/api/calc', requireAuth, async (req, res) => {
+  try {
+    const payload = { ...req.body };
+    if (payload.action === 'tdee') {
+      payload.activity_level = activityLevelToEngineValue(payload.activity_level);
+    }
+    const result = await callCalcEngine(payload);
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 // ─── 个人信息 API ────────────────────────────────────
 
 app.get('/api/profile', requireAuth, (req, res) => {
@@ -586,24 +797,44 @@ app.put('/api/profile', requireAuth, (req, res) => {
     gender, age, height, weight, initial_weight, target_weight, target_date, activity_level, avatar_url,
     reminder_weigh, reminder_weigh_enabled,
     reminder_water_interval, reminder_water_enabled,
-    reminder_exercise, reminder_exercise_enabled
+    reminder_exercise, reminder_exercise_enabled,
+    onboarded
   } = req.body;
   if (avatar_url && String(avatar_url).length > 900000) return res.status(400).json(err(400, '头像图片过大，请换一张小图'));
   try {
+    let previous = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.session.userId);
+    if (!previous) {
+      db.prepare('INSERT INTO profiles (user_id) VALUES (?)').run(req.session.userId);
+      previous = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.session.userId);
+    }
+    const nextOnboarded = onboarded === undefined ? (previous?.onboarded || 0) : (onboarded ? 1 : 0);
     db.prepare(
       `UPDATE profiles SET gender=?, age=?, height=?, weight=?, initial_weight=?, target_weight=?, activity_level=?, target_date=?, avatar_url=?,
         reminder_weigh=?, reminder_weigh_enabled=?,
         reminder_water_interval=?, reminder_water_enabled=?,
         reminder_exercise=?, reminder_exercise_enabled=?,
+        onboarded=?,
         updated_at=CURRENT_TIMESTAMP WHERE user_id=?`
     ).run(
       gender, age, height, weight, initial_weight || weight || null, target_weight, activity_level, target_date || null, avatar_url || null,
       reminder_weigh || '08:00', reminder_weigh_enabled ? 1 : 0,
       reminder_water_interval || 120, reminder_water_enabled ? 1 : 0,
       reminder_exercise || '18:00', reminder_exercise_enabled ? 1 : 0,
+      nextOnboarded,
       req.session.userId
     );
-    res.json(ok(null, '个人信息已更新'));
+    if ((previous?.onboarded || 0) === 0 && nextOnboarded === 1 && Number(weight) > 0) {
+      const recordDate = today();
+      const existing = db.prepare(
+        'SELECT id FROM weight_records WHERE user_id = ? AND record_date = ? ORDER BY created_at DESC LIMIT 1'
+      ).get(req.session.userId, recordDate);
+      if (!existing) {
+        db.prepare('INSERT INTO weight_records (user_id, weight, record_date) VALUES (?, ?, ?)')
+          .run(req.session.userId, Number(weight), recordDate);
+      }
+    }
+    const updated = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(req.session.userId);
+    res.json(ok({ profile: updated, targets: calcServerTargets(updated) }, '个人信息已更新'));
   } catch (e) {
     res.status(500).json(err(500, '更新失败'));
   }
@@ -739,6 +970,76 @@ app.post('/api/ai/recognize-food', requireAuth, async (req, res) => {
   }
 });
 
+app.post('/api/ai/estimate-food-calorie', requireAuth, async (req, res) => {
+  const foodName = String(req.body?.food_name || req.body?.name || '').trim();
+  if (!foodName) return res.status(400).json(err(400, '请先输入食物名称'));
+
+  const local = findLocalFoodCalorieEstimate(foodName, AI_FOOD_CATALOG);
+  if (local) return res.json(ok(local));
+
+  if (process.env.AI_MOCK === '1') {
+    return res.json(ok({
+      food_name: foodName,
+      calories_per_100g: 100,
+      confidence: 0.5,
+      note: '调试模式默认估算',
+      source: 'mock',
+    }));
+  }
+
+  if (!AI_CONFIG.zhipu.apiKey) {
+    return res.status(500).json(err(500, '本地库未找到，且未配置AI密钥，无法自动估算'));
+  }
+
+  try {
+    const content = await callZhipuFoodCalorieEstimate(AI_CONFIG.zhipu, foodName);
+    const parsed = extractJsonObject(content);
+    res.json(ok(sanitizeCalorieEstimate(parsed, foodName)));
+  } catch (e) {
+    console.error('Food calorie estimate failed:', e);
+    res.status(500).json(err(500, e.message || 'AI估算热量失败，请手动填写'));
+  }
+});
+
+app.post('/api/ai/can-i-eat', requireAuth, async (req, res) => {
+  const snapshot = buildCoachSnapshotForUser(req.session.userId);
+  let analysis;
+  try {
+    analysis = buildCanIEatAnalysis({
+      ...snapshot,
+      proposedFoods: req.body?.foods || req.body?.proposedFoods,
+    });
+  } catch (e) {
+    return res.status(400).json(err(400, e.message || '食物信息不完整'));
+  }
+
+  const localCopy = buildLocalCanIEatCopy(analysis);
+  if (process.env.AI_MOCK === '1' || !AI_CONFIG.zhipu.apiKey) {
+    return res.json(ok({
+      analysis,
+      coachCopy: localCopy,
+      provider: process.env.AI_MOCK === '1' ? 'mock' : 'local',
+    }));
+  }
+
+  try {
+    const coachCopy = await callZhipuCanIEatCopy(AI_CONFIG.zhipu, snapshot, analysis);
+    res.json(ok({
+      analysis,
+      coachCopy,
+      provider: 'zhipu',
+      model: AI_CONFIG.zhipu.chatModel,
+    }));
+  } catch (e) {
+    console.error('Can I eat copy failed:', e);
+    res.json(ok({
+      analysis,
+      coachCopy: `${localCopy}\n\n（小瘦刚才网络开小差了，先按本地计算结果给你判断。）`,
+      provider: 'local-fallback',
+    }));
+  }
+});
+
 app.post('/api/ai/coach-chat', requireAuth, async (req, res) => {
   const message = String(req.body?.message || '').trim();
   if (!message) return res.status(400).json(err(400, '请输入要和小瘦说的话'));
@@ -750,6 +1051,28 @@ app.post('/api/ai/coach-chat', requireAuth, async (req, res) => {
     ? history
     : [...history, { role: 'user', content: message }];
   const local = buildLocalCoachReply(message, snapshot).content;
+
+  if (req.query.stream === '1') {
+    startCoachTextStream(res);
+    if (process.env.AI_MOCK === '1' || !AI_CONFIG.zhipu.apiKey) {
+      await streamLocalCoachReply(res, local);
+      return res.end();
+    }
+
+    let wroteProviderChunk = false;
+    try {
+      await callZhipuCoachStream(AI_CONFIG.zhipu, snapshot, outbound, chunk => {
+        wroteProviderChunk = true;
+        res.write(chunk);
+      });
+    } catch (e) {
+      console.error('AI coach stream failed:', e);
+      if (!wroteProviderChunk) {
+        await streamLocalCoachReply(res, `${local}\n\n锛堝皬鐦﹀垰鎵嶇綉缁滃紑灏忓樊浜嗭紝鍏堟寜浣犵殑鏈湴鏁版嵁缁欏缓璁€傦級`);
+      }
+    }
+    return res.end();
+  }
 
   if (process.env.AI_MOCK === '1' || !AI_CONFIG.zhipu.apiKey) {
     return res.json(ok({

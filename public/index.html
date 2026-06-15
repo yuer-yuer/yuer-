@@ -47,7 +47,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
           </svg>
         </div>
-        <h1 class="text-3xl font-bold text-gray-800">减脂健康助手</h1>
+        <h1 class="text-3xl font-bold text-gray-800">慢慢瘦</h1>
         <p class="text-gray-500 mt-2">科学减脂，健康生活</p>
       </div>
 
@@ -123,7 +123,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="font-bold text-gray-800">减脂助手</h2>
+            <h2 class="font-bold text-gray-800">慢慢瘦</h2>
             <p id="sidebar-username" class="text-xs text-gray-400"></p>
           </div>
         </div>
@@ -140,7 +140,7 @@
     <!-- 顶部栏（移动端） -->
     <header class="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200">
       <div class="flex items-center justify-between px-4 h-14">
-        <h1 class="font-bold text-gray-800">减脂助手</h1>
+        <h1 class="font-bold text-gray-800">慢慢瘦</h1>
         <div class="flex items-center gap-2">
           <button onclick="openModal('about-modal')" class="p-2 text-gray-400 hover:text-gray-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -360,7 +360,10 @@
               <h3 class="text-sm font-medium text-gray-500">AI 拍照记录</h3>
               <p class="text-xs text-gray-400 mt-1">拍餐食照片，AI估算食物、分量和营养</p>
             </div>
-            <button type="button" onclick="openAiCameraModal()" class="btn-primary text-sm px-4">📸 拍照记录</button>
+            <div class="flex gap-2 flex-wrap justify-end">
+              <button type="button" onclick="openCanIEatPanel()" class="neo-mini-btn">我能吃吗</button>
+              <button type="button" onclick="openAiCameraModal()" class="btn-primary text-sm px-4">📸 拍照记录</button>
+            </div>
           </div>
           <input type="file" id="ai-food-photo-input" accept="image/*" class="ai-file-input" onchange="handleAiFoodPhoto(this.files?.[0])">
           <div id="ai-food-loading" class="hidden mt-4 ai-loading-card">
@@ -1013,6 +1016,58 @@
     </div>
   </div>
 
+  <div id="can-i-eat-sheet" class="can-eat-sheet hidden">
+    <div class="can-eat-backdrop" onclick="closeCanIEatPanel()"></div>
+    <section class="can-eat-panel" aria-label="我能吃吗">
+      <header class="can-eat-head">
+        <div>
+          <p class="brutal-kicker">FOOD SANDBOX</p>
+          <h3>我能吃吗</h3>
+        </div>
+        <button type="button" onclick="closeCanIEatPanel()" class="neo-icon-btn" aria-label="关闭">×</button>
+      </header>
+      <div class="can-eat-form">
+        <label>
+          <span>食物</span>
+          <input id="can-eat-name" type="text" class="input-field" placeholder="例如：炸鸡套餐" oninput="handleCanIEatNameInput()">
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <label>
+            <span>热量/100g</span>
+            <input id="can-eat-cal" type="number" min="1" class="input-field" placeholder="可不填" oninput="handleCanIEatCalorieInput()">
+            <small id="can-eat-cal-source" class="can-eat-cal-source">输入食物名后自动匹配热量</small>
+          </label>
+          <label>
+            <span>分量 g</span>
+            <input id="can-eat-amount" type="number" min="1" class="input-field" placeholder="例如 200">
+          </label>
+        </div>
+        <label>
+          <span>餐次</span>
+          <select id="can-eat-meal" class="input-field">
+            <option value="breakfast">早餐</option>
+            <option value="lunch">午餐</option>
+            <option value="dinner">晚餐</option>
+            <option value="snack">加餐</option>
+          </select>
+        </label>
+        <div class="can-eat-actions">
+          <button type="button" onclick="openCanIEatCamera()" class="neo-mini-btn">拍照判断</button>
+          <button type="button" id="can-eat-estimate-btn" onclick="estimateCanIEatCalorie()" class="neo-mini-btn can-eat-estimate-btn">AI估算热量</button>
+          <button type="button" onclick="submitCanIEatManual()" class="btn-primary">开始判断</button>
+        </div>
+      </div>
+      <div id="can-eat-loading" class="hidden ai-loading-card mt-4">
+        <div class="ai-loader"></div>
+        <div>
+          <p class="font-bold text-gray-800">小瘦正在推演...</p>
+          <p class="text-xs text-gray-500 mt-1">先算预算，再生成吃法建议</p>
+        </div>
+      </div>
+      <div id="can-eat-result" class="can-eat-result"></div>
+    </section>
+  </div>
+
   <div id="weight-goal-modal" class="modal hidden">
     <div class="modal-backdrop" onclick="closeWeightGoalModal()"></div>
     <div class="modal-content">
@@ -1155,6 +1210,7 @@
   <!-- ════════════ 脚本 ════════════ -->
   <script src="/js/food-db.js"></script>
   <script src="/js/food-images.js"></script>
+  <script src="/js/can-i-eat-calorie.js"></script>
   <script src="/js/exercise-db.js"></script>
   <script src="/js/charts.js"></script>
   <script src="/js/ai-coach-rules.js"></script>

@@ -28,6 +28,13 @@ const AppState = {
     foods: [],
     summary: '',
   },
+  canIEat: {
+    loading: false,
+    result: null,
+    sourceFoods: [],
+    photoMode: false,
+    estimateMode: false,
+  },
   aiCoach: {
     messages: [],
     quickPrompts: [],
@@ -45,6 +52,12 @@ const AppState = {
   },
   aiCameraStream: null,
   frequentExercises: [],
+  onboarding: {
+    step: 1,
+    data: {},
+    errors: {},
+    submitting: false,
+  },
   exercisePicker: {
     category: 'all',
     selected: null,
@@ -813,6 +826,7 @@ async function loadAllData() {
   renderExerciseTimer();
   loadExerciseStats();
   renderMyPage();
+  maybeShowOnboarding();
 }
 
 async function refreshSavedPlanPreview() {
@@ -837,6 +851,193 @@ async function loadProfile() {
     fillReminderForm();
     updateBMIDisplay();
   }
+}
+
+function tomorrowISO() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  return date.toISOString().split('T')[0];
+}
+
+function initOnboardingData() {
+  const p = AppState.profile || {};
+  AppState.onboarding = {
+    step: 1,
+    errors: {},
+    submitting: false,
+    data: {
+      gender: p.gender || 'male',
+      age: p.age || 22,
+      height: p.height || 175,
+      weight: p.weight || 75,
+      target_weight: p.target_weight || 65,
+      target_date: p.target_date || tomorrowISO(),
+      activity_level: p.activity_level || 'moderate',
+    },
+  };
+}
+
+function maybeShowOnboarding() {
+  if (!AppState.profile || Number(AppState.profile.onboarded || 0) === 1) return;
+  if (document.getElementById('onboarding-overlay')) return;
+  initOnboardingData();
+  renderOnboarding();
+}
+
+function setOnboardingValue(key, value) {
+  AppState.onboarding.data[key] = value;
+  AppState.onboarding.errors[key] = '';
+  renderOnboarding();
+}
+
+function onboardingSuggestion() {
+  const current = Number(AppState.onboarding.data.weight);
+  const target = Number(AppState.onboarding.data.target_weight);
+  const diff = current - target;
+  if (!current || !target || diff <= 0) return '目标体重需要小于当前体重';
+  if (diff <= 5) return '建议4-6周';
+  if (diff <= 10) return '建议6-12周';
+  if (diff <= 20) return '建议12-24周';
+  return '建议24周以上，稳扎稳打';
+}
+
+function validateOnboardingStep(step = AppState.onboarding.step) {
+  const data = AppState.onboarding.data;
+  const errors = {};
+  if (step === 1) {
+    if (!data.gender) errors.gender = '请选择性别';
+    if (!Number.isInteger(Number(data.age)) || Number(data.age) < 12 || Number(data.age) > 100) errors.age = '请输入有效年龄（12-100）';
+    if (!Number(data.height) || Number(data.height) < 100 || Number(data.height) > 250) errors.height = '请输入有效身高（100-250cm）';
+  }
+  if (step === 2) {
+    if (!Number(data.weight) || Number(data.weight) < 30 || Number(data.weight) > 300) errors.weight = '请输入有效体重（30-300kg）';
+    if (!Number(data.target_weight) || Number(data.target_weight) >= Number(data.weight)) errors.target_weight = '目标体重应小于当前体重';
+    if (!data.target_date || data.target_date < tomorrowISO()) errors.target_date = '目标日期至少是明天';
+  }
+  if (step === 3 && !data.activity_level) errors.activity_level = '请选择活动等级';
+  AppState.onboarding.errors = errors;
+  return Object.keys(errors).length === 0;
+}
+
+function nextOnboardingStep() {
+  if (!validateOnboardingStep()) return renderOnboarding();
+  AppState.onboarding.step = Math.min(3, AppState.onboarding.step + 1);
+  AppState.onboarding.errors = {};
+  renderOnboarding();
+}
+
+function prevOnboardingStep() {
+  AppState.onboarding.step = Math.max(1, AppState.onboarding.step - 1);
+  AppState.onboarding.errors = {};
+  renderOnboarding();
+}
+
+function onboardingInputClass(key) {
+  return AppState.onboarding.errors[key] ? 'onboarding-input is-error' : 'onboarding-input';
+}
+
+function onboardingError(key) {
+  return AppState.onboarding.errors[key] ? `<p class="onboarding-error">${AppState.onboarding.errors[key]}</p>` : '';
+}
+
+function renderOnboarding() {
+  let overlay = document.getElementById('onboarding-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'onboarding-overlay';
+    overlay.className = 'onboarding-overlay';
+    document.body.appendChild(overlay);
+  }
+  const { step, data, submitting } = AppState.onboarding;
+  const progress = [1, 2, 3].map(n => `<span class="${n < step ? 'done' : n === step ? 'active' : ''}"></span>`).join('');
+  const activityOptions = [
+    ['sedentary', '久坐不动', '办公室工作，几乎不运动'],
+    ['light', '轻度活动', '每周1-3天有运动'],
+    ['moderate', '中度活动', '每周3-5天有运动'],
+    ['active', '高强度运动', '每周6-7天有运动'],
+    ['very_active', '极高强度', '体力劳动或每天高强度训练'],
+  ];
+  let body = '';
+  if (step === 1) {
+    body = `
+      <h2>欢迎来到慢慢瘦！</h2>
+      <p class="onboarding-lead">让我们了解你，才能更好地帮你</p>
+      <label class="onboarding-label">你的性别</label>
+      <div class="onboarding-choice-row">
+        <button type="button" class="${data.gender === 'male' ? 'selected' : ''}" onclick="setOnboardingValue('gender','male')">男生</button>
+        <button type="button" class="${data.gender === 'female' ? 'selected' : ''}" onclick="setOnboardingValue('gender','female')">女生</button>
+      </div>
+      ${onboardingError('gender')}
+      <label class="onboarding-label">你的年龄</label>
+      <input class="${onboardingInputClass('age')}" type="number" min="12" max="100" value="${data.age || ''}" oninput="AppState.onboarding.data.age=this.value">
+      ${onboardingError('age')}
+      <label class="onboarding-label">你的身高（cm）</label>
+      <input class="${onboardingInputClass('height')}" type="number" min="100" max="250" value="${data.height || ''}" oninput="AppState.onboarding.data.height=this.value">
+      ${onboardingError('height')}
+      <button type="button" class="onboarding-primary" onclick="nextOnboardingStep()">下一步</button>
+    `;
+  } else if (step === 2) {
+    body = `
+      <h2>设定你的目标</h2>
+      <label class="onboarding-label">当前体重（kg）</label>
+      <input class="${onboardingInputClass('weight')}" type="number" min="30" max="300" step="0.1" value="${data.weight || ''}" oninput="AppState.onboarding.data.weight=this.value; document.getElementById('onboarding-suggestion').textContent=onboardingSuggestion()">
+      ${onboardingError('weight')}
+      <label class="onboarding-label">目标体重（kg）</label>
+      <input class="${onboardingInputClass('target_weight')}" type="number" min="30" max="300" step="0.1" value="${data.target_weight || ''}" oninput="AppState.onboarding.data.target_weight=this.value; document.getElementById('onboarding-suggestion').textContent=onboardingSuggestion()">
+      ${onboardingError('target_weight')}
+      <label class="onboarding-label">目标日期</label>
+      <input class="${onboardingInputClass('target_date')}" type="date" min="${tomorrowISO()}" value="${data.target_date || ''}" oninput="AppState.onboarding.data.target_date=this.value">
+      ${onboardingError('target_date')}
+      <p id="onboarding-suggestion" class="onboarding-tip">${onboardingSuggestion()}</p>
+      <div class="onboarding-actions"><button type="button" onclick="prevOnboardingStep()">上一步</button><button type="button" onclick="nextOnboardingStep()">下一步</button></div>
+    `;
+  } else {
+    body = `
+      <h2>你平时的活动量</h2>
+      <div class="onboarding-activity-list">
+        ${activityOptions.map(([value, title, desc]) => `
+          <button type="button" class="${data.activity_level === value ? 'selected' : ''}" onclick="setOnboardingValue('activity_level','${value}')">
+            <strong>${data.activity_level === value ? '✓ ' : ''}${title}</strong><span>${desc}</span>
+          </button>
+        `).join('')}
+      </div>
+      ${onboardingError('activity_level')}
+      <div class="onboarding-actions"><button type="button" onclick="prevOnboardingStep()">上一步</button><button type="button" onclick="submitOnboarding()" ${submitting ? 'disabled' : ''}>${submitting ? '提交中...' : '开始使用'}</button></div>
+    `;
+  }
+  overlay.innerHTML = `<div class="onboarding-panel"><div class="onboarding-progress">${progress}</div>${body}</div>`;
+  document.body.style.overflow = 'hidden';
+}
+
+async function submitOnboarding() {
+  if (!validateOnboardingStep(3)) return renderOnboarding();
+  AppState.onboarding.submitting = true;
+  renderOnboarding();
+  const data = AppState.onboarding.data;
+  const payload = {
+    ...AppState.profile,
+    gender: data.gender,
+    age: parseInt(data.age, 10),
+    height: parseFloat(data.height),
+    weight: parseFloat(data.weight),
+    initial_weight: parseFloat(data.weight),
+    target_weight: parseFloat(data.target_weight),
+    target_date: data.target_date,
+    activity_level: data.activity_level,
+    onboarded: 1,
+  };
+  const res = await api('/api/profile', { method: 'PUT', body: payload });
+  AppState.onboarding.submitting = false;
+  if (!res) return renderOnboarding();
+  AppState.profile = res.data?.profile || { ...payload, onboarded: 1 };
+  const overlay = document.getElementById('onboarding-overlay');
+  if (overlay) overlay.remove();
+  document.body.style.overflow = '';
+  await loadWeightRecords();
+  await refreshSavedPlanPreview();
+  updateDashboard();
+  renderMyPage();
+  showToast('设置完成，开始你的减脂之旅！');
 }
 
 async function loadCustomFoods() {
@@ -1561,8 +1762,10 @@ function hideAiCoachNudge() {
 function renderAiCoachMessages() {
   const box = document.getElementById('ai-coach-messages');
   if (!box) return;
+  const lastMessage = AppState.aiCoach.messages[AppState.aiCoach.messages.length - 1];
+  const hasStreamingBubble = lastMessage?.role === 'assistant' && lastMessage.streaming;
   box.innerHTML = AppState.aiCoach.messages.map(renderAiCoachMessage).join('') + (
-    AppState.aiCoach.loading ? `
+    AppState.aiCoach.loading && !hasStreamingBubble ? `
       <div class="ai-coach-row assistant">
         <span class="ai-coach-avatar">🤖</span>
         <div><div class="ai-coach-bubble typing"><i></i><i></i><i></i></div><time>小瘦思考中</time></div>
@@ -1575,12 +1778,15 @@ function renderAiCoachMessages() {
 function renderAiCoachMessage(message) {
   const isUser = message.role === 'user';
   const avatar = isUser ? (AppState.user?.username || '我').slice(0, 1).toUpperCase() : '🤖';
+  const isTyping = !isUser && message.streaming && !message.content;
   return `
     <div class="ai-coach-row ${isUser ? 'user' : 'assistant'}">
       ${isUser ? '' : `<span class="ai-coach-avatar">${avatar}</span>`}
       <div>
-        <div class="ai-coach-bubble">${escapeHtml(message.content).replace(/\n/g, '<br>')}</div>
-        <time>${formatAiCoachTime(message.timestamp)}</time>
+        ${isTyping
+          ? '<div class="ai-coach-bubble typing"><i></i><i></i><i></i></div>'
+          : `<div class="ai-coach-bubble">${escapeHtml(message.content).replace(/\n/g, '<br>')}</div>`}
+        <time>${message.streaming ? '小瘦输出中' : formatAiCoachTime(message.timestamp)}</time>
       </div>
       ${isUser ? `<span class="ai-coach-avatar">${avatar}</span>` : ''}
     </div>
@@ -1606,6 +1812,38 @@ function sendAiCoachQuick(text) {
   sendAiCoachMessage();
 }
 
+async function streamAiCoachReply(message, history, onChunk) {
+  const res = await fetch('/api/ai/coach-chat?stream=1', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ message, history }),
+  });
+  if (res.status === 401) {
+    showAuthPage();
+    return '';
+  }
+  if (!res.ok || !res.body) throw new Error('coach stream failed');
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let reply = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    if (!chunk) continue;
+    reply += chunk;
+    onChunk(chunk);
+  }
+  const tail = decoder.decode();
+  if (tail) {
+    reply += tail;
+    onChunk(tail);
+  }
+  return reply;
+}
+
 async function sendAiCoachMessage() {
   if (AppState.aiCoach.loading) return;
   hideAiCoachNudge();
@@ -1614,38 +1852,42 @@ async function sendAiCoachMessage() {
   if (!message) return;
   input.value = '';
   AppState.aiCoach.messages.push({ role: 'user', content: message, timestamp: Date.now() });
+  const assistantMessage = {
+    role: 'assistant',
+    content: '',
+    timestamp: Date.now(),
+    provider: 'stream',
+    streaming: true,
+  };
+  AppState.aiCoach.messages.push(assistantMessage);
   AppState.aiCoach.loading = true;
   saveAiCoachMessages();
   updateAiCoachQuickPrompts();
   renderAiCoachMessages();
 
-  const res = await api('/api/ai/coach-chat', {
-    method: 'POST',
-    body: {
+  try {
+    await streamAiCoachReply(
       message,
-      history: AppState.aiCoach.messages.slice(-12).map(item => ({ role: item.role, content: item.content })),
-    },
-  });
-
-  AppState.aiCoach.loading = false;
-  if (res?.data?.reply) {
-    AppState.aiCoach.messages.push({
-      role: 'assistant',
-      content: res.data.reply,
-      timestamp: Date.now(),
-      provider: res.data.provider,
-    });
-    updateAiCoachQuickPrompts(res.data.quickPrompts);
+      AppState.aiCoach.messages
+        .filter(item => item.content)
+        .slice(-12)
+        .map(item => ({ role: item.role, content: item.content })),
+      chunk => {
+        assistantMessage.content += chunk;
+        renderAiCoachMessages();
+      }
+    );
+  } catch (e) {
+    if (!assistantMessage.content) {
+      assistantMessage.content = '小瘦网络开小差了，稍后再试一下~';
+    }
+  } finally {
+    assistantMessage.streaming = false;
+    AppState.aiCoach.loading = false;
+    updateAiCoachQuickPrompts();
     saveAiCoachMessages();
-  } else {
-    AppState.aiCoach.messages.push({
-      role: 'assistant',
-      content: '小瘦网络开小差了，稍后再试一下~',
-      timestamp: Date.now(),
-    });
-    saveAiCoachMessages();
+    renderAiCoachMessages();
   }
-  renderAiCoachMessages();
 }
 
 function initAiCoachDrag() {
@@ -1855,6 +2097,103 @@ async function saveMyPlan() {
   showToast('计划已保存');
 }
 
+function activityLevelToEngineValue(level) {
+  const map = { sedentary: 1, light: 2, moderate: 3, active: 4, heavy: 4, very_active: 5 };
+  return map[level] || 1;
+}
+
+function getLocalCalcMetrics() {
+  const currentWeight = latestWeightValue() || AppState.profile?.weight || 0;
+  const targetWeight = Number(AppState.profile?.target_weight) || 0;
+  const tdee = calcTDEE();
+  const bmi = calcBMI();
+  const status = getBMIStatus(bmi);
+  const dailyDeficit = tdee ? Math.min(Math.round(tdee * 0.2), 500) : 0;
+  const weeklyLoss = dailyDeficit ? dailyDeficit * 7 / 7700 : 0;
+  const estimatedWeeks = currentWeight > targetWeight && weeklyLoss ? (currentWeight - targetWeight) / weeklyLoss : 0;
+  return {
+    bmr: calcBMR(),
+    tdee,
+    bmi,
+    bmiCategory: status.text,
+    currentWeight,
+    targetWeight,
+    dailyDeficit,
+    dailyIntake: tdee && dailyDeficit ? tdee - dailyDeficit : 0,
+    estimatedWeeks,
+  };
+}
+
+function renderCalcCardsMarkup(metrics, engineReady) {
+  return `
+    <h4>精准计算${engineReady ? '（C++引擎）' : '（本地预览）'}</h4>
+    <div class="cpp-metric-grid">
+      <div><span>BMR</span><strong>${metrics.bmr ? Math.round(metrics.bmr) : '--'}</strong><em>kcal/天</em></div>
+      <div><span>TDEE</span><strong>${metrics.tdee ? Math.round(metrics.tdee) : '--'}</strong><em>kcal/天</em></div>
+      <div><span>BMI</span><strong>${metrics.bmi || '--'}</strong><em>${metrics.bmiCategory || '--'}</em></div>
+    </div>
+    <div class="cpp-plan-box">
+      <h5>减脂计划</h5>
+      <p>目标：${metrics.currentWeight || '--'}kg → ${metrics.targetWeight || '--'}kg</p>
+      <p>预计需要：${metrics.estimatedWeeks ? metrics.estimatedWeeks.toFixed(1) : '--'} 周</p>
+      <p>建议每日摄入：${metrics.dailyIntake ? Math.round(metrics.dailyIntake) : '--'} kcal</p>
+      <p>每日缺口：${metrics.dailyDeficit ? Math.round(metrics.dailyDeficit) : '--'} kcal</p>
+    </div>
+  `;
+}
+
+async function refreshCppCalcCard() {
+  const card = document.getElementById('cpp-calc-card');
+  const p = AppState.profile || {};
+  const currentWeight = latestWeightValue() || p.weight;
+  if (!card || !p.height || !p.age || !currentWeight) return;
+  try {
+    const tdeeRes = await api('/api/calc', {
+      method: 'POST',
+      body: {
+        action: 'tdee',
+        weight: Number(currentWeight),
+        height: Number(p.height),
+        age: Number(p.age),
+        gender: p.gender || 'male',
+        activity_level: activityLevelToEngineValue(p.activity_level),
+      },
+    });
+    const bmiRes = await api('/api/calc', {
+      method: 'POST',
+      body: { action: 'bmi', weight: Number(currentWeight), height: Number(p.height) },
+    });
+    const targetWeight = Number(p.target_weight);
+    let planRes = null;
+    if (tdeeRes?.success && targetWeight && targetWeight < Number(currentWeight)) {
+      planRes = await api('/api/calc', {
+        method: 'POST',
+        body: {
+          action: 'weight_plan',
+          current_weight: Number(currentWeight),
+          target_weight: targetWeight,
+          tdee: Number(tdeeRes.result.tdee),
+        },
+      });
+    }
+    if (!tdeeRes?.success || !bmiRes?.success) return;
+    const local = getLocalCalcMetrics();
+    const metrics = {
+      ...local,
+      bmr: tdeeRes.result.bmr,
+      tdee: tdeeRes.result.tdee,
+      bmi: bmiRes.result.bmi,
+      bmiCategory: bmiRes.result.category,
+      dailyDeficit: planRes?.result?.daily_deficit || local.dailyDeficit,
+      dailyIntake: planRes?.result?.daily_intake || local.dailyIntake,
+      estimatedWeeks: planRes?.result?.estimated_weeks || local.estimatedWeeks,
+    };
+    card.innerHTML = renderCalcCardsMarkup(metrics, true);
+  } catch (e) {
+    // Keep the local preview when the native engine is not built.
+  }
+}
+
 function openBodyProfileSheet() {
   const p = AppState.profile || {};
   const bmi = calcBMI();
@@ -1885,6 +2224,9 @@ function openBodyProfileSheet() {
           <div><strong>${AppState.profile?.target_weight || '--'}</strong><span>目标体重</span><em>kg</em></div>
         </div>
       </div>
+      <div id="cpp-calc-card" class="my-profile-card cpp-calc-card">
+        ${renderCalcCardsMarkup(getLocalCalcMetrics(), false)}
+      </div>
       <div class="my-profile-card my-weight-trend-card">
         <h4>近期体重趋势</h4>
         <div class="my-mini-chart-wrap"><canvas id="my-mini-weight-chart"></canvas></div>
@@ -1893,6 +2235,7 @@ function openBodyProfileSheet() {
   `, 'BODY FILE');
   renderAvatarElement('my-profile-avatar-preview', p.avatar_url, AppState.user?.username?.slice(0, 1).toUpperCase() || '我');
   setTimeout(() => updateMiniWeightChart(AppState.weightRecords, AppState.profile), 80);
+  refreshCppCalcCard();
 }
 
 async function saveMyProfile() {
@@ -2240,6 +2583,14 @@ async function analyzeAiFoodImage(image) {
     }
     AppState.aiFood = { foods, summary: res.data.summary || '' };
     renderAiFoodResult();
+    if (AppState.canIEat.estimateMode) {
+      fillCanIEatFromAiEstimate(foods);
+      return true;
+    }
+    if (AppState.canIEat.photoMode) {
+      fillCanIEatFromAiEstimate(foods, { silent: true });
+      await submitCanIEatFoods(foods);
+    }
     return true;
   } finally {
     loading?.classList.add('hidden');
@@ -2286,12 +2637,22 @@ function renderAiFoodResult() {
         <strong id="ai-food-total">${total}</strong>
         <span>kcal</span>
       </div>
-      <div class="grid grid-cols-2 gap-2 mt-4">
+      <div class="grid grid-cols-3 gap-2 mt-4">
         <button type="button" onclick="renderAiFoodResult()" class="neo-mini-btn">重新计算</button>
         <button type="button" onclick="confirmAiFoodAdd()" class="btn-primary">确认添加</button>
       </div>
     </div>
   `;
+  const actionRow = container.querySelector('.grid');
+  if (actionRow && !actionRow.querySelector('[data-can-eat-ai-action]')) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'neo-mini-btn';
+    button.dataset.canEatAiAction = '1';
+    button.textContent = '我能吃吗';
+    button.onclick = submitAiFoodToCanIEat;
+    actionRow.insertBefore(button, actionRow.lastElementChild);
+  }
   container.classList.remove('hidden');
 }
 
@@ -2338,6 +2699,256 @@ function updateAiFoodTotal() {
   const total = AppState.aiFood.foods.reduce((sum, item) => sum + Math.round(Number(item.total_calories || 0)), 0);
   const totalEl = document.getElementById('ai-food-total');
   if (totalEl) totalEl.textContent = total;
+}
+
+function openCanIEatPanel(seedFood) {
+  const sheet = document.getElementById('can-i-eat-sheet');
+  if (!sheet) return;
+  sheet.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  AppState.canIEat.photoMode = false;
+  AppState.canIEat.estimateMode = false;
+  if (seedFood || selectedFood) {
+    const food = seedFood || selectedFood;
+    document.getElementById('can-eat-name').value = food.name || food.food_name || '';
+    document.getElementById('can-eat-cal').value = Math.round(Number(food.cal || food.calories_per_100g || 0)) || '';
+    document.getElementById('can-eat-amount').value = Math.round(Number(food.amount_g || food.estimated_amount_g || 100)) || '';
+    document.getElementById('can-eat-meal').value = food.meal_type || document.getElementById('food-meal')?.value || 'snack';
+    setCanIEatCalorieSource(food.cal || food.calories_per_100g ? 'manual' : 'idle', food.name || food.food_name || '');
+  } else {
+    updateCanIEatCalorieFromName();
+  }
+}
+
+function closeCanIEatPanel() {
+  document.getElementById('can-i-eat-sheet')?.classList.add('hidden');
+  document.body.style.overflow = '';
+  AppState.canIEat.photoMode = false;
+  AppState.canIEat.estimateMode = false;
+}
+
+function openCanIEatCamera() {
+  AppState.canIEat.photoMode = true;
+  AppState.canIEat.estimateMode = false;
+  closeCanIEatPanel();
+  AppState.canIEat.photoMode = true;
+  openAiCameraModal();
+}
+
+function getCanIEatCalorieSourceEl() {
+  return document.getElementById('can-eat-cal-source');
+}
+
+function setCanIEatCalorieSource(status, foodName) {
+  const sourceEl = getCanIEatCalorieSourceEl();
+  if (!sourceEl) return;
+  const labels = {
+    manual: '热量来源：用户填写',
+    local: `热量来源：本地食物库${foodName ? `（${foodName}）` : ''}`,
+    ai: '热量来源：AI估算，可手动修改',
+    estimating: 'AI正在估算热量，请稍等...',
+    needs_estimate: '本地库没找到，可手填热量或点 AI估算热量',
+    idle: '输入食物名后自动匹配热量',
+  };
+  sourceEl.textContent = labels[status] || labels.idle;
+  sourceEl.dataset.source = status || 'idle';
+}
+
+function resolveCanIEatCurrentCalorie(manualOnly = false) {
+  const resolver = window.resolveCanIEatCalorieSource;
+  const name = document.getElementById('can-eat-name')?.value?.trim() || '';
+  const calEl = document.getElementById('can-eat-cal');
+  const source = getCanIEatCalorieSourceEl()?.dataset.source;
+  const manualCalories = source === 'manual' || source === 'ai' || manualOnly ? calEl?.value : 0;
+  if (typeof resolver !== 'function') {
+    const calories = Number(calEl?.value || 0);
+    return calories > 0
+      ? { status: source || 'manual', caloriesPer100g: calories, matchedFood: null }
+      : { status: 'needs_estimate', caloriesPer100g: 0, matchedFood: null };
+  }
+  return resolver({ name, manualCalories }, FOOD_DATABASE);
+}
+
+function updateCanIEatCalorieFromName() {
+  const calEl = document.getElementById('can-eat-cal');
+  if (!calEl) return;
+  const source = getCanIEatCalorieSourceEl()?.dataset.source;
+  if (source === 'manual' && Number(calEl.value) > 0) return;
+  const resolved = resolveCanIEatCurrentCalorie(false);
+  if (resolved.status === 'local' && resolved.caloriesPer100g > 0) {
+    calEl.value = Math.round(resolved.caloriesPer100g);
+    setCanIEatCalorieSource('local', resolved.matchedFood?.name);
+    return;
+  }
+  if (source !== 'ai') calEl.value = '';
+  setCanIEatCalorieSource(resolved.status);
+}
+
+function handleCanIEatNameInput() {
+  const sourceEl = getCanIEatCalorieSourceEl();
+  if (sourceEl?.dataset.source !== 'manual') updateCanIEatCalorieFromName();
+}
+
+function handleCanIEatCalorieInput() {
+  const cal = Number(document.getElementById('can-eat-cal')?.value || 0);
+  if (cal > 0) setCanIEatCalorieSource('manual');
+  else updateCanIEatCalorieFromName();
+}
+
+function setCanIEatEstimateLoading(isLoading) {
+  const button = document.getElementById('can-eat-estimate-btn');
+  if (!button) return;
+  button.disabled = !!isLoading;
+  button.classList.toggle('is-loading', !!isLoading);
+  button.textContent = isLoading ? 'AI正在估算...' : 'AI估算热量';
+}
+
+async function estimateCanIEatCalorie() {
+  const name = document.getElementById('can-eat-name')?.value?.trim();
+  const calEl = document.getElementById('can-eat-cal');
+  if (!name) return showToast('请先输入食物名称', 'warning');
+  setCanIEatEstimateLoading(true);
+  setCanIEatCalorieSource('estimating');
+
+  try {
+    const local = resolveCanIEatCurrentCalorie(false);
+    if (local.status === 'local' && local.caloriesPer100g > 0) {
+      if (calEl) calEl.value = Math.round(local.caloriesPer100g);
+      setCanIEatCalorieSource('local', local.matchedFood?.name);
+      return;
+    }
+
+    const res = await api('/api/ai/estimate-food-calorie', {
+      method: 'POST',
+      body: { food_name: name },
+    });
+    if (!res?.data) {
+      setCanIEatCalorieSource('needs_estimate');
+      return;
+    }
+    if (calEl) calEl.value = Math.round(Number(res.data.calories_per_100g || 0)) || '';
+    setCanIEatCalorieSource(res.data.source === 'local' ? 'local' : 'ai', res.data.food_name || name);
+    showToast(`已填入 ${res.data.calories_per_100g} kcal/100g`);
+  } finally {
+    setCanIEatEstimateLoading(false);
+  }
+}
+
+function fillCanIEatFromAiEstimate(foods, options = {}) {
+  const first = normalizeCanIEatFoods(foods)[0];
+  AppState.canIEat.estimateMode = false;
+  if (!first) return showToast('没有识别到可估算热量的食物', 'warning');
+  const sheet = document.getElementById('can-i-eat-sheet');
+  sheet?.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('can-eat-name').value = first.name || '';
+  document.getElementById('can-eat-cal').value = Math.round(first.calories_per_100g) || '';
+  document.getElementById('can-eat-amount').value = Math.round(first.amount_g) || '';
+  document.getElementById('can-eat-meal').value = first.meal_type || document.getElementById('food-meal')?.value || 'snack';
+  setCanIEatCalorieSource('ai');
+  if (!options.silent) showToast('已填入 AI 估算热量，可修改后再判断');
+}
+
+function canIEatFoodsFromManualForm() {
+  const name = document.getElementById('can-eat-name')?.value?.trim();
+  const resolved = resolveCanIEatCurrentCalorie(false);
+  const calories = Number(resolved.caloriesPer100g || 0);
+  const amount = Number(document.getElementById('can-eat-amount')?.value || 0);
+  const mealType = document.getElementById('can-eat-meal')?.value || 'snack';
+  if (!name) {
+    showToast('请输入食物名称', 'warning');
+    return null;
+  }
+  if (calories <= 0) {
+    setCanIEatCalorieSource('needs_estimate');
+    showToast('请手动填写热量，或使用 AI 估算热量', 'warning');
+    return null;
+  }
+  if (amount <= 0) {
+    showToast('请输入有效的分量', 'warning');
+    return null;
+  }
+  document.getElementById('can-eat-cal').value = Math.round(calories);
+  if (resolved.status === 'local') setCanIEatCalorieSource('local', resolved.matchedFood?.name);
+  return [{ name, calories_per_100g: calories, amount_g: amount, meal_type: mealType }];
+}
+
+function normalizeCanIEatFoods(foods) {
+  return (foods || []).map(food => ({
+    name: food.name || food.food_name,
+    calories_per_100g: Number(food.calories_per_100g || food.cal || 0),
+    amount_g: Number(food.amount_g || food.estimated_amount_g || 0),
+    meal_type: food.meal_type || document.getElementById('can-eat-meal')?.value || document.getElementById('food-meal')?.value || 'snack',
+  })).filter(food => food.name && food.calories_per_100g > 0 && food.amount_g > 0);
+}
+
+async function submitCanIEatManual() {
+  const foods = canIEatFoodsFromManualForm();
+  if (foods) await submitCanIEatFoods(foods);
+}
+
+async function submitAiFoodToCanIEat() {
+  const foods = normalizeCanIEatFoods(AppState.aiFood.foods);
+  if (!foods.length) return showToast('没有可判断的识别结果', 'warning');
+  await submitCanIEatFoods(foods);
+}
+
+async function submitCanIEatFoods(foods) {
+  const normalized = normalizeCanIEatFoods(foods);
+  if (!normalized.length) return showToast('请先提供食物和分量', 'warning');
+  const sheet = document.getElementById('can-i-eat-sheet');
+  const loading = document.getElementById('can-eat-loading');
+  const result = document.getElementById('can-eat-result');
+  sheet?.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  loading?.classList.remove('hidden');
+  if (result) result.innerHTML = '';
+  AppState.canIEat.loading = true;
+  AppState.canIEat.sourceFoods = normalized;
+  try {
+    const res = await api('/api/ai/can-i-eat', { method: 'POST', body: { foods: normalized } });
+    if (!res?.data) return;
+    AppState.canIEat.result = res.data;
+    renderCanIEatResult(res.data);
+  } finally {
+    AppState.canIEat.loading = false;
+    loading?.classList.add('hidden');
+    AppState.canIEat.photoMode = false;
+  }
+}
+
+function renderCanIEatResult(data) {
+  const container = document.getElementById('can-eat-result');
+  if (!container) return;
+  const analysis = data.analysis;
+  const budget = analysis.budget;
+  const rescue = analysis.rescuePlan.exercises || [];
+  const reduce = analysis.swapPlan.reduceAmount;
+  const alternatives = analysis.swapPlan.alternatives || [];
+  const statusLabel = analysis.status === 'over' ? '会超标' : analysis.status === 'tight' ? '能吃但偏紧' : '可以吃';
+  container.innerHTML = `
+    <div class="can-eat-summary ${analysis.status}">
+      <span>${statusLabel}</span>
+      <strong>${analysis.proposed.totalCalories} kcal</strong>
+      <small>吃完剩余 ${budget.afterRemaining} kcal</small>
+    </div>
+    <div class="can-eat-copy">${escapeHtml(data.coachCopy || analysis.eatPlan.summary).replace(/\n/g, '<br>')}</div>
+    <div class="can-eat-grid">
+      <article>
+        <h4>${escapeHtml(analysis.eatPlan.title)}</h4>
+        <p>${escapeHtml(analysis.eatPlan.summary)}</p>
+      </article>
+      <article>
+        <h4>${escapeHtml(analysis.rescuePlan.title)}</h4>
+        ${rescue.length ? `<div class="can-eat-tags">${rescue.map(item => `<span>${escapeHtml(item.name)} ${item.minutes}分钟</span>`).join('')}</div>` : `<p>${escapeHtml(analysis.rescuePlan.summary)}</p>`}
+      </article>
+      <article>
+        <h4>${escapeHtml(analysis.swapPlan.title)}</h4>
+        <p>${escapeHtml(reduce.foodName)} ${reduce.originalAmountG}g → ${reduce.suggestedAmountG}g，少约 ${reduce.savedCalories} kcal</p>
+        <div class="can-eat-tags">${alternatives.map(item => `<span>${escapeHtml(item.name)}</span>`).join('')}</div>
+      </article>
+    </div>
+  `;
 }
 
 function removeAiFoodItem(index) {
