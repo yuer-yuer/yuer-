@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PlayerDialog</class>
+ <widget class="QDialog" name="PlayerDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>896</width>
+    <height>618</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PlayerDialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+    background-color: #0a0a0a;
+}
+
+#wdg_content {
+    background-color: #000000;
+    border: none;
+    border-radius: 0px;
+}
+
+#wdg_midl, #wdg_buttom {
+    background-color: transparent;
+}
+
+QLabel {
+    color: #c8c8c8;
+    font-family: &quot;Microsoft YaHei&quot;, &quot;SimHei&quot;, sans-serif;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+}
+
+/* ========== 进度条：灰色轨道 + 蓝色滑块 ========== */
+QSlider::groove:horizontal {
+    height: 3px;
+    background: #555555;
+    border-radius: 1px;
+}
+
+QSlider::sub-page:horizontal {
+    background: #0ea5e9;
+    border-radius: 1px;
+}
+
+QSlider::add-page:horizontal {
+    background: #555555;
+    border-radius: 1px;
+}
+
+QSlider::handle:horizontal {
+    width: 10px;
+    height: 10px;
+    margin: -3px 0;
+    background: #0ea5e9;
+    border-radius: 5px;
+    border: 2px solid #0a0a0a;
+}
+
+QSlider::handle:horizontal:hover {
+    background: #38bdf8;
+    width: 12px;
+    height: 12px;
+    margin: -4px 0;
+}
+
+/* ========== 圆形符号按钮 ========== */
+QPushButton {
+    background-color: transparent;
+    color: #e5e5e5;
+    border: 2px solid #555555;
+    border-radius: 16px;
+    padding: 0px;
+    font-size: 20px;
+    font-weight: bold;
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+}
+
+QPushButton:hover {
+    background-color: rgba(255,255,255,0.1);
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+}
+
+QPushButton:pressed {
+    background-color: rgba(14,165,233,0.2);
+    border-color: #0ea5e9;
+}
+
+QPushButton:disabled {
+    color: #444444;
+    border-color: #333333;
+}
+
+/* 打开按钮：方形加粗样式 */
+#pb_start {
+    background-color: transparent;
+    border: 2px solid #555555;
+    border-radius: 4px;
+    color: #e5e5e5;
+    font-size: 22px;
+    font-weight: bold;
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 28px;
+    max-height: 28px;
+}
+#pb_start:hover {
+    border-color: #0ea5e9;
+    color: #0ea5e9;
+}
+
+/* 在线播放按钮 */
+#pb_online {
+    font-size: 24px;
+    font-weight: bold;
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    border-radius: 16px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QWidget" name="wdg_content" native="true">
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(0, 0, 0);</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="MyOpenGLWidget" name="wdg_show" native="true"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="wdg_midl" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>28</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>32</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="wdg_mid">
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>10</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="lb_curTime">
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="slider_progress">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="lb_totalTime">
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="wdg_buttom" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>48</height>
+      </size>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QPushButton" name="pb_start">
+        <property name="text">
+         <string>☰</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>12</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_resume">
+        <property name="text">
+         <string>▶</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>8</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_pause">
+        <property name="text">
+         <string>||</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_4">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>8</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_stop">
+        <property name="text">
+         <string>■</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>200</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="lb_videoName">
+        <property name="text">
+         <string>未播放</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>200</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_online">
+        <property name="font">
+         <font>
+          <family>Agency FB</family>
+          <pointsize>-1</pointsize>
+         </font>
+        </property>
+        <property name="toolTipDuration">
+         <number>1</number>
+        </property>
+        <property name="text">
+         <string>+</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MyOpenGLWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">myopenglwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

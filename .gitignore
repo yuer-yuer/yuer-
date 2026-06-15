@@ -1,0 +1,31 @@
+# Build outputs
+debug/
+release/
+Makefile
+Makefile.Debug
+Makefile.Release
+object_script.*
+.qmake.stash
+moc_*.cpp
+ui_*.h
+*.o
+*.obj
+*.exe
+!ffmpeg-4.2.2/bin/ffmpeg.exe
+
+# Qt Creator user files
+*.pro.user
+*.pro.user.*
+
+# Runtime generated files
+temp/
+record/
+*.log
+*.tmp
+
+# Local assistant/editor state
+.workbuddy/
+
+# OS files
+Thumbs.db
+.DS_Store
