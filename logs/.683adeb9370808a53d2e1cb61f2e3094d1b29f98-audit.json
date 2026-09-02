@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 30
+    },
+    "auditLog": "d:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\.683adeb9370808a53d2e1cb61f2e3094d1b29f98-audit.json",
+    "files": [
+        {
+            "date": 1788353222682,
+            "name": "d:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\error-2026-09-02.log",
+            "hash": "023e65169b705c740f143a1daefeb1113ec39f4dbc3e98f5d80fd90cc83d003c"
+        }
+    ],
+    "hashType": "sha256"
+}

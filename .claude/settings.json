@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const s='开发AI减脂助手，解决热量估算与计算分散问题，以C++引擎和AI视觉识别优化，功能完整可上架。'; console.log\\(s.length\\); console.log\\([...s].length\\);\")",
+      "Bash(node -e \"const s='开发AI减脂助手，解决热量估算与计算分散问题，以C++引擎AI视觉识别优化，功能完整可上架。'; console.log\\(s.length, [...s].length\\);\")",
+      "Read(//c/Users/86188/.claude/**)",
+      "Bash(docker-compose up *)",
+      "Bash(docker compose *)",
+      "Bash(npm install *)",
+      "Bash(systeminfo)",
+      "Bash(findstr /C:\"OS Name\" /C:\"OS Version\" /C:\"System Type\")"
+    ]
+  }
+}
