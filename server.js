@@ -1397,6 +1397,46 @@ app.get('/api/history', requireAuth, (req, res) => {
   res.json(ok({ date, food, exercise, water, weight }));
 });
 
+// ─── Agent API ─────────────────────────────────────────
+const { agentGraph } = require('./agents');
+const metricsCollector = require('./monitoring/metrics');
+
+// Agent对话接口
+app.post('/api/agent/chat', async (req, res) => {
+  try {
+    const { message, userId } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: '消息不能为空' });
+    }
+
+    // 调用Agent Graph
+    const result = await agentGraph.invoke({
+      message,
+      userId: userId || req.session.userId || 'anonymous',
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error('Agent处理失败:', error);
+    res.status(500).json({
+      error: '处理失败',
+      reply: '抱歉，系统繁忙，请稍后再试😊',
+    });
+  }
+});
+
+// 指标查询接口
+app.get('/api/agent/metrics', (req, res) => {
+  try {
+    const metrics = metricsCollector.getMetrics();
+    res.json(metrics);
+  } catch (error) {
+    console.error('获取指标失败:', error);
+    res.status(500).json({ error: '获取指标失败' });
+  }
+});
+
 // ─── SPA 回退 ──────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

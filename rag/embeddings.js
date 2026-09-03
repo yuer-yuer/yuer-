@@ -6,10 +6,21 @@ const ragConfig = require('../config/rag.config');
 
 class EmbeddingService {
   constructor() {
-    this.apiKey = ragConfig.embedding.apiKey;
-    this.model = ragConfig.embedding.model;
-    this.baseURL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
+    // 优先使用阿里云DashScope
+    if (process.env.DASHSCOPE_API_KEY) {
+      this.provider = 'dashscope';
+      this.apiKey = process.env.DASHSCOPE_API_KEY;
+      this.model = 'text-embedding-v2';
+      this.baseURL = 'https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding';
+    } else {
+      // 降级到智谱
+      this.provider = 'zhipu';
+      this.apiKey = ragConfig.embedding.apiKey;
+      this.model = ragConfig.embedding.model;
+      this.baseURL = 'https://open.bigmodel.cn/api/paas/v4/embeddings';
+    }
     this.batchSize = ragConfig.embedding.batchSize;
+    logger.info(`Embedding服务: ${this.provider}`);
   }
 
   /**
@@ -29,27 +40,52 @@ class EmbeddingService {
 
     while (retries > 0) {
       try {
-        const response = await axios.post(
-          this.baseURL,
-          {
-            model: this.model,
-            input: text,
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${this.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            timeout: 30000, // 30秒超时
-          }
-        );
+        let embedding;
 
-        const embedding = response.data.data[0].embedding;
+        if (this.provider === 'dashscope') {
+          // 阿里云DashScope API
+          const response = await axios.post(
+            this.baseURL,
+            {
+              model: this.model,
+              input: {
+                texts: [text],
+              },
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json',
+              },
+              timeout: 30000,
+            }
+          );
+
+          embedding = response.data.output.embeddings[0].embedding;
+        } else {
+          // 智谱API
+          const response = await axios.post(
+            this.baseURL,
+            {
+              model: this.model,
+              input: text,
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${this.apiKey}`,
+                'Content-Type': 'application/json',
+              },
+              timeout: 30000,
+            }
+          );
+
+          embedding = response.data.data[0].embedding;
+        }
 
         // 缓存结果
         await cacheManager.setEmbedding(text, embedding);
 
-        logger.debug('Embedding生成成功', { textLength: text.length });
+        logger.debug('Embedding生成成功', { provider: this.provider, textLength: text.length });
         return embedding;
       } catch (error) {
         lastError = error;
