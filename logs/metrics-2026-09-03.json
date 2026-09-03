@@ -2,16 +2,16 @@
   "llm": {
     "totalCalls": 1,
     "cachedCalls": 0,
-    "tokensUsed": 159,
+    "tokensUsed": 150,
     "tokensSaved": 0,
-    "totalCost": 0.0000159,
+    "totalCost": 0.000015000000000000002,
     "costSaved": 0,
     "cacheHitRate": "0.00"
   },
   "agents": {
     "totalCalls": 1,
     "byAgent": {
-      "general_agent": 1
+      "test_agent": 1
     }
   },
   "tools": {
