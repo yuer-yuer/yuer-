@@ -36,9 +36,14 @@ class AgentGraph {
         ],
         intent: null,
         userId: input.userId,
+        sessionId: input.sessionId, // 新增：传递sessionId
       };
 
-      logger.info('Agent流程开始', { userId: input.userId, message: input.message });
+      logger.info('Agent流程开始', {
+        userId: input.userId,
+        sessionId: input.sessionId,
+        message: input.message
+      });
 
       // 2. 意图分类
       state = await this.nodes.classifier(state);
@@ -61,6 +66,7 @@ class AgentGraph {
 
       logger.info('Agent流程完成', {
         userId: input.userId,
+        sessionId: input.sessionId,
         intent: state.intent,
         duration,
       });
@@ -74,6 +80,7 @@ class AgentGraph {
         agent: assistantMessage.metadata?.agent || 'unknown',
         knowledgeUsed: assistantMessage.metadata?.knowledgeUsed || 0,
         duration,
+        sessionId: input.sessionId,
         error: assistantMessage.metadata?.error || false,
       };
     } catch (error) {
@@ -86,6 +93,7 @@ class AgentGraph {
         agent: 'error',
         knowledgeUsed: 0,
         duration: Date.now() - startTime,
+        sessionId: input.sessionId,
         error: true,
       };
     }

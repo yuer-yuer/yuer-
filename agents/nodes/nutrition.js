@@ -6,15 +6,16 @@ const { hybridRetriever } = require('../../rag');
 const nutritionPrompt = require('../prompts/nutrition');
 const agentConfig = require('../../config/agent.config');
 const { executeTool, getAgentTools } = require('../../tools');
+const { sessionManager, userProfileManager } = require('../../session');
 
 /**
- * 营养师Agent节点（支持Tool调用）
+ * 营养师Agent节点（支持Tool调用、会话、用户上下文）
  */
 async function nutritionAgentNode(state) {
-  const { messages } = state;
+  const { messages, sessionId, userId } = state;
   const userMessage = messages[messages.length - 1].content;
 
-  logger.info('营养师Agent处理开始', { message: userMessage });
+  logger.info('营养师Agent处理开始', { message: userMessage, sessionId, userId });
   const startTime = Date.now();
 
   try {
@@ -24,14 +25,24 @@ async function nutritionAgentNode(state) {
 
     logger.info('营养知识检索完成', { resultsCount: knowledge.length });
 
-    // 2. 构建带工具的Prompt
-    const availableTools = getAgentTools('nutrition');
-    const systemPrompt = buildSystemPrompt(nutritionPrompt, knowledgeContext, availableTools);
+    // 2. 获取会话历史和用户上下文
+    const sessionContext = sessionId ? sessionManager.getContext(sessionId, 3) : '';
+    const userContext = userId ? userProfileManager.generateUserContext(userId) : '';
 
-    // 3. 调用GLM-4-Flash（可能返回工具调用）
+    // 3. 构建带工具和上下文的Prompt
+    const availableTools = getAgentTools('nutrition');
+    const systemPrompt = buildSystemPrompt(
+      nutritionPrompt,
+      knowledgeContext,
+      availableTools,
+      sessionContext,
+      userContext
+    );
+
+    // 4. 调用GLM-4-Flash（可能返回工具调用）
     let response = await callGLM4(systemPrompt, userMessage);
 
-    // 4. 检测是否需要工具调用
+    // 5. 检测是否需要工具调用
     const toolCalls = extractToolCalls(response);
 
     if (toolCalls.length > 0) {
@@ -129,10 +140,20 @@ async function callGLM4(systemPrompt, userMessage, skipToolCheck = false) {
 }
 
 /**
- * 构建带工具描述的System Prompt
+ * 构建带工具描述和上下文的System Prompt
  */
-function buildSystemPrompt(basePrompt, knowledgeContext, availableTools) {
+function buildSystemPrompt(basePrompt, knowledgeContext, availableTools, sessionContext = '', userContext = '') {
   let prompt = basePrompt.replace('{knowledge}', knowledgeContext);
+
+  // 添加用户上下文
+  if (userContext) {
+    prompt = prompt + '\n\n' + userContext;
+  }
+
+  // 添加对话历史
+  if (sessionContext) {
+    prompt = prompt + '\n\n' + sessionContext;
+  }
 
   // 添加工具描述
   if (availableTools.length > 0) {
