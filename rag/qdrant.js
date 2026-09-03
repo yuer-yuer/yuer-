@@ -75,21 +75,27 @@ class QdrantService {
     try {
       const startTime = Date.now();
 
-      const results = await this.client.search(this.collectionName, {
+      // 兼容不同版本的API调用方式
+      const searchParams = {
         vector,
         limit: topK,
-        filter,
         with_payload: true,
-      });
+      };
+
+      if (filter) {
+        searchParams.filter = filter;
+      }
+
+      const results = await this.client.search(this.collectionName, searchParams);
 
       const duration = Date.now() - startTime;
-      logger.debug(`Qdrant检索完成`, { topK, resultsCount: results.length, duration });
+      logger.debug('Qdrant检索完成', { topK, resultsCount: results.length, duration });
 
       return results.map(result => ({
         id: result.id,
         score: result.score,
-        content: result.payload.content,
-        metadata: result.payload,
+        content: result.payload?.content || '',
+        metadata: result.payload || {},
       }));
     } catch (error) {
       logger.error('向量检索失败', { error: error.message });

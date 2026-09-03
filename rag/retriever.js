@@ -23,12 +23,18 @@ class HybridRetriever {
       // 1. 生成查询向量
       const queryVector = await embeddingService.embed(query);
 
-      // 2. Qdrant向量检索
-      const vectorResults = await qdrantService.search(
-        queryVector,
-        this.topK * 2, // 多召回一些，用于后续融合
-        category ? { must: [{ key: 'category', match: { value: category } }] } : null
-      );
+      // 2. Qdrant向量检索（带降级）
+      let vectorResults = [];
+      try {
+        vectorResults = await qdrantService.search(
+          queryVector,
+          this.topK * 2,
+          category ? { must: [{ key: 'category', match: { value: category } }] } : null
+        );
+        logger.debug('向量检索成功', { count: vectorResults.length });
+      } catch (error) {
+        logger.warn('向量检索失败，使用纯关键词模式', { error: error.message });
+      }
 
       // 3. Elasticsearch关键词检索
       const keywordResults = await elasticsearchService.search(
@@ -37,13 +43,27 @@ class HybridRetriever {
         category
       );
 
-      // 4. 融合结果
+      // 4. 如果向量检索失败，直接返回关键词结果
+      if (vectorResults.length === 0) {
+        const topResults = keywordResults.slice(0, ragConfig.retrieval.rerankerTopK);
+        const duration = Date.now() - startTime;
+        logger.info('关键词检索完成（降级模式）', {
+          query,
+          category,
+          resultsCount: topResults.length,
+          duration,
+        });
+        metricsCollector.recordRAGQuery(topResults.length, duration);
+        return topResults;
+      }
+
+      // 5. 融合结果
       const fusedResults = this._fuseResults(vectorResults, keywordResults);
 
-      // 5. 重排序（基于余弦相似度）
+      // 6. 重排序（基于余弦相似度）
       const rerankedResults = await this._rerank(query, queryVector, fusedResults);
 
-      // 6. 过滤低分结果
+      // 7. 过滤低分结果
       const filteredResults = rerankedResults.filter(
         r => r.score >= this.scoreThreshold
       ).slice(0, ragConfig.retrieval.rerankerTopK);

@@ -151,7 +151,8 @@ class ElasticsearchService {
    * 内存搜索（简单关键词匹配）
    */
   _memorySearch(query, topK, category) {
-    const keywords = query.toLowerCase().split(/\s+/);
+    // 改进分词：支持中文单字分词
+    const keywords = this._tokenize(query);
 
     let results = this.documents
       .filter(doc => {
@@ -165,12 +166,17 @@ class ElasticsearchService {
         return keywords.some(keyword => content.includes(keyword));
       })
       .map(doc => {
-        // 计算匹配分数（简单计数）
+        // 计算匹配分数（改进算法）
         const content = doc.content.toLowerCase();
-        const score = keywords.reduce((sum, keyword) => {
+        let score = 0;
+
+        keywords.forEach(keyword => {
+          // 计算关键词出现次数
           const matches = (content.match(new RegExp(keyword, 'g')) || []).length;
-          return sum + matches;
-        }, 0);
+          // 长词权重更高
+          const weight = keyword.length > 1 ? 2 : 1;
+          score += matches * weight;
+        });
 
         return {
           id: doc.id,
@@ -179,13 +185,47 @@ class ElasticsearchService {
           metadata: doc.metadata,
         };
       })
+      .filter(doc => doc.score > 0) // 过滤无匹配的文档
       .sort((a, b) => b.score - a.score)
       .slice(0, topK);
 
-    const duration = Date.now() - Date.now();
-    logger.debug('内存搜索完成', { topK, resultsCount: results.length, duration });
+    logger.debug('内存搜索完成', {
+      topK,
+      keywords: keywords.join(','),
+      resultsCount: results.length,
+    });
 
     return results;
+  }
+
+  /**
+   * 改进的中文分词
+   */
+  _tokenize(text) {
+    const lower = text.toLowerCase();
+    const tokens = [];
+
+    // 提取英文词和数字
+    const words = lower.match(/[a-z0-9]+/g) || [];
+    tokens.push(...words);
+
+    // 提取中文字符
+    const chinese = lower.replace(/[^一-龥]/g, '');
+
+    // 添加2-4字的中文词组
+    for (let len = 4; len >= 2; len--) {
+      for (let i = 0; i <= chinese.length - len; i++) {
+        tokens.push(chinese.substring(i, i + len));
+      }
+    }
+
+    // 添加单个中文字
+    for (let i = 0; i < chinese.length; i++) {
+      tokens.push(chinese[i]);
+    }
+
+    // 去重
+    return [...new Set(tokens)];
   }
 
   /**
