@@ -1400,23 +1400,53 @@ app.get('/api/history', requireAuth, (req, res) => {
 // ─── Agent API ─────────────────────────────────────────
 const { agentGraph } = require('./agents');
 const metricsCollector = require('./monitoring/metrics');
+const { sessionManager } = require('./session');
 
-// Agent对话接口
+// Agent对话接口（支持会话）
 app.post('/api/agent/chat', async (req, res) => {
   try {
-    const { message, userId } = req.body;
+    const { message, userId, sessionId } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: '消息不能为空' });
     }
 
+    // 获取或创建会话
+    let activeSessionId = sessionId;
+    if (sessionId) {
+      const session = sessionManager.getSession(sessionId);
+      if (!session) {
+        // 会话不存在或已过期，创建新会话
+        const newSession = sessionManager.createSession(userId || 'anonymous');
+        activeSessionId = newSession.sessionId;
+      }
+    } else {
+      // 没有提供sessionId，创建新会话
+      const newSession = sessionManager.createSession(userId || 'anonymous');
+      activeSessionId = newSession.sessionId;
+    }
+
+    // 添加用户消息到会话
+    sessionManager.addMessage(activeSessionId, 'user', message);
+
     // 调用Agent Graph
     const result = await agentGraph.invoke({
       message,
       userId: userId || req.session.userId || 'anonymous',
+      sessionId: activeSessionId,
     });
 
-    res.json(result);
+    // 添加AI回复到会话
+    sessionManager.addMessage(activeSessionId, 'assistant', result.reply, {
+      intent: result.intent,
+      agent: result.agent,
+    });
+
+    // 返回结果（包含sessionId）
+    res.json({
+      ...result,
+      sessionId: activeSessionId,
+    });
   } catch (error) {
     console.error('Agent处理失败:', error);
     res.status(500).json({
@@ -1436,6 +1466,10 @@ app.get('/api/agent/metrics', (req, res) => {
     res.status(500).json({ error: '获取指标失败' });
   }
 });
+
+// ─── 新增API路由 ─────────────────────────────────────
+const apiRouter = require('./routes/api');
+app.use('/api', apiRouter);
 
 // ─── SPA 回退 ──────────────────────────────────────
 app.get('*', (req, res) => {
