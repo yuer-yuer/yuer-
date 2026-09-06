@@ -6,15 +6,25 @@
 
 ## 当前更新
 
-相较早期版本，当前工作区已经加入或更新了这些能力：
+### 最新进展（Day 7）
 
-- 新用户引导：首次进入时收集性别、年龄、身高、当前体重、目标体重、目标日期和活动等级，并写入个人资料。
-- C++ 计算引擎：新增 `cpp_engine/`，通过 stdin/stdout 与 Node.js 集成，提供健康指标计算。
-- “我能吃吗”食物沙盒：可手动输入、拍照识别或 AI 估算热量，判断吃完后是否会超出今日预算，并给出替换和运动补救建议。
-- 食物热量估算：优先匹配本地食物库，未命中时可调用 AI 估算每 100g 热量。
-- AI 私教流式回复：支持 `stream=1` 的文本流输出，提升聊天响应体验。
-- PWA 缓存更新：Service Worker 缓存版本升级，并加入新的前端脚本。
-- 测试补充：新增 C++ 引擎、食物沙盒、热量估算和流式解析相关测试。
+- **ReAct 推理模式全面升级**：三个核心 Agent（nutrition、fitness、router）全部升级为 ReAct 推理模式，增强了推理透明度和决策准确性
+- **多 Agent 协作系统**：实现了基于 LangGraph 的多 Agent 架构，支持营养分析、健身指导和智能路由的协同工作
+- **RAG 混合检索**：集成 Qdrant 向量数据库，实现语义检索 + 关键词检索的混合搜索策略
+- **Tool Calling V2**：完整的工具调用系统，支持用户数据查询、健康计算、食物分析等多种工具
+- **对话管理和记忆系统**：实现了完整的对话历史管理和用户记忆系统，提升 AI 私教的个性化能力
+
+### 早期功能
+
+相较最初版本，项目已经加入或更新了这些能力：
+
+- 新用户引导：首次进入时收集性别、年龄、身高、当前体重、目标体重、目标日期和活动等级，并写入个人资料
+- C++ 计算引擎：新增 `cpp_engine/`，通过 stdin/stdout 与 Node.js 集成，提供健康指标计算
+- “我能吃吗”食物沙盒：可手动输入、拍照识别或 AI 估算热量，判断吃完后是否会超出今日预算，并给出替换和运动补救建议
+- 食物热量估算：优先匹配本地食物库，未命中时可调用 AI 估算每 100g 热量
+- AI 私教流式回复：支持 `stream=1` 的文本流输出，提升聊天响应体验
+- PWA 缓存更新：Service Worker 缓存版本升级，并加入新的前端脚本
+- 测试补充：新增 C++ 引擎、食物沙盒、热量估算和流式解析相关测试
 
 ## 核心功能
 
@@ -29,13 +39,16 @@
 
 ## 技术栈
 
-- Backend: Node.js, Express
-- Database: SQLite, better-sqlite3
-- Auth: express-session, bcryptjs
-- Frontend: Vanilla JavaScript, HTML, CSS
-- Native engine: C++17
-- PWA: Manifest, Service Worker
-- AI: 智谱 GLM / 兼容视觉模型接口
+- **Backend**: Node.js, Express
+- **Database**: SQLite (better-sqlite3), Qdrant (向量数据库)
+- **Auth**: express-session, bcryptjs
+- **Frontend**: Vanilla JavaScript, HTML, CSS
+- **Native engine**: C++17
+- **PWA**: Manifest, Service Worker
+- **AI 框架**: LangGraph (多 Agent 编排), LangChain
+- **AI 模型**: 智谱 GLM-4-Flash (对话), GLM-4V-Flash (视觉识别)
+- **推理模式**: ReAct (Reasoning + Acting)
+- **RAG**: Qdrant 向量检索 + 关键词混合检索
 
 ## 本地运行
 
@@ -88,6 +101,8 @@ SESSION_SECRET=replace_with_a_strong_secret
 ZHIPU_API_KEY=replace_with_your_zhipu_api_key
 ZHIPU_VISION_MODEL=glm-4v-flash
 ZHIPU_CHAT_MODEL=glm-4-flash
+QDRANT_URL=http://localhost:6333
+QDRANT_COLLECTION=manman_shou_knowledge
 ```
 
 可选调试变量：
@@ -103,11 +118,19 @@ AI Key 必须只放在服务端，不能写入前端代码、PWA 缓存或打包
 ```text
 .
 ├── server.js                  # Express API、SQLite 初始化和 AI 服务编排
+├── agents/                    # 多 Agent 系统
+│   ├── graph.js              # LangGraph 多 Agent 编排
+│   ├── langgraph/            # LangGraph 实现
+│   └── prompts/              # Agent 提示词（nutrition、fitness、router、general）
 ├── lib/                       # 可复用业务逻辑
-│   ├── coach-core.js          # AI 私教本地规则和上下文构建
-│   ├── coach-stream.js        # 流式回复解析和文本分块
-│   ├── fat-loss-sandbox.js    # “我能吃吗”预算推演
+│   ├── coach-core.js         # AI 私教本地规则和上下文构建
+│   ├── coach-stream.js       # 流式回复解析和文本分块
+│   ├── fat-loss-sandbox.js   # “我能吃吗”预算推演
 │   └── food-calorie-estimator.js
+├── rag/                       # RAG 检索系统
+│   └── qdrant.js             # Qdrant 向量数据库集成
+├── config/                    # 配置文件
+│   └── rag.config.js         # RAG 配置
 ├── cpp_engine/                # C++17 健康计算引擎
 ├── public/                    # 前端静态资源
 │   ├── index.html
@@ -117,6 +140,7 @@ AI Key 必须只放在服务端，不能写入前端代码、PWA 缓存或打包
 │   ├── manifest.webmanifest
 │   └── sw.js
 ├── scripts/                   # 开发脚本
+│   └── init_knowledge.js     # 知识库初始化
 ├── tests/                     # Node 测试
 ├── data/                      # 本地 SQLite 数据库，已忽略
 └── docs/                      # 实施计划和项目文档
