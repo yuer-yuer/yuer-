@@ -1,0 +1,61 @@
+{
+  "name": "慢慢瘦",
+  "short_name": "慢慢瘦",
+  "description": "减脂健康助手",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#fff9e8",
+  "theme_color": "#c7ff2e",
+  "id": "/",
+  "lang": "zh-CN",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "记录饮食",
+      "short_name": "饮食",
+      "url": "/#food",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "记录饮水",
+      "short_name": "饮水",
+      "url": "/#water",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "记录运动",
+      "short_name": "运动",
+      "url": "/#exercise",
+      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}

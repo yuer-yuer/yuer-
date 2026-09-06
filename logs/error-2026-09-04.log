@@ -1,0 +1,19 @@
+{"error":"mapper_parsing_exception\n\tCaused by:\n\t\tillegal_argument_exception: analyzer [ik_smart] has not been configured in mappings\n\tRoot causes:\n\t\tmapper_parsing_exception: Failed to parse mapping: analyzer [ik_smart] has not been configured in mappings","level":"error","message":"ES索引初始化失败","timestamp":"2026-09-04 12:01:42"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 12:03:20"}
+{"error":"Bad Request","level":"error","message":"向量化失败","timestamp":"2026-09-04 12:03:20"}
+{"error":"mapper_parsing_exception\n\tCaused by:\n\t\tillegal_argument_exception: analyzer [ik_smart] has not been configured in mappings\n\tRoot causes:\n\t\tmapper_parsing_exception: Failed to parse mapping: analyzer [ik_smart] has not been configured in mappings","level":"error","message":"ES索引初始化失败","timestamp":"2026-09-04 13:59:01"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 14:00:08"}
+{"error":"Bad Request","level":"error","message":"向量化失败","timestamp":"2026-09-04 14:00:08"}
+{"error":"mapper_parsing_exception\n\tCaused by:\n\t\tillegal_argument_exception: analyzer [ik_smart] has not been configured in mappings\n\tRoot causes:\n\t\tmapper_parsing_exception: Failed to parse mapping: analyzer [ik_smart] has not been configured in mappings","level":"error","message":"ES索引初始化失败","timestamp":"2026-09-04 17:32:53"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 17:34:00"}
+{"error":"Bad Request","level":"error","message":"向量化失败","timestamp":"2026-09-04 17:34:00"}
+{"error":"mapper_parsing_exception\n\tCaused by:\n\t\tillegal_argument_exception: analyzer [ik_smart] has not been configured in mappings\n\tRoot causes:\n\t\tmapper_parsing_exception: Failed to parse mapping: analyzer [ik_smart] has not been configured in mappings","level":"error","message":"ES索引初始化失败","timestamp":"2026-09-04 17:45:04"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 17:46:12"}
+{"error":"Bad Request","level":"error","message":"向量化失败","timestamp":"2026-09-04 17:46:12"}
+{"error":"mapper_parsing_exception\n\tCaused by:\n\t\tillegal_argument_exception: analyzer [ik_smart] has not been configured in mappings\n\tRoot causes:\n\t\tmapper_parsing_exception: Failed to parse mapping: analyzer [ik_smart] has not been configured in mappings","level":"error","message":"ES索引初始化失败","timestamp":"2026-09-04 17:55:22"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 17:56:30"}
+{"error":"Bad Request","level":"error","message":"向量化失败","timestamp":"2026-09-04 17:56:30"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 18:07:42"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 18:46:57"}
+{"error":"Bad Request","level":"error","message":"向量插入失败","timestamp":"2026-09-04 18:48:34"}
+{"error":"mapper_parsing_exception\n\tCaused by:\n\t\tillegal_argument_exception: analyzer [ik_smart] has not been configured in mappings\n\tRoot causes:\n\t\tmapper_parsing_exception: Failed to parse mapping: analyzer [ik_smart] has not been configured in mappings","level":"error","message":"ES索引初始化失败","timestamp":"2026-09-04 18:52:54"}

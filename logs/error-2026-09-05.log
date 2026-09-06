@@ -1,0 +1,38 @@
+{"error":"Found edge ending at unknown node `function routeToAgent(state) {\n  const { intent } = state;\n  logger.debug('路由到Agent', { intent });\n\n  switch (intent) {\n    case 'nutrition':\n      return 'nutrition';\n    case 'fitness':\n      return 'fitness';\n    default:\n      return 'general';\n  }\n}`","level":"error","message":"对话处理失败","stack":"Error: Found edge ending at unknown node `function routeToAgent(state) {\n  const { intent } = state;\n  logger.debug('路由到Agent', { intent });\n\n  switch (intent) {\n    case 'nutrition':\n      return 'nutrition';\n    case 'fitness':\n      return 'fitness';\n    default:\n      return 'general';\n  }\n}`\n    at StateGraph.validate (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\@langchain\\langgraph\\dist\\graph\\graph.cjs:319:23)\n    at StateGraph.compile (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\@langchain\\langgraph\\dist\\graph\\state.cjs:369:14)\n    at createGraph (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\agents\\langgraph\\graph.js:81:24)\n    at getGraph (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\agents\\langgraph\\index.js:12:21)\n    at D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\server-langgraph.js:40:19\n    at Layer.handle [as handle_request] (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at next (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\express\\lib\\router\\route.js:149:13)\n    at Route.dispatch (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\express\\lib\\router\\route.js:119:3)\n    at Layer.handle [as handle_request] (D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\express\\lib\\router\\layer.js:95:5)\n    at D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\node_modules\\express\\lib\\router\\index.js:284:15","timestamp":"2026-09-05 14:30:55"}
+{"error":"hybridSearch is not a function","level":"error","message":"RAG节点失败","timestamp":"2026-09-05 15:33:06"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition节点失败","timestamp":"2026-09-05 15:33:06"}
+{"error":"hybridRetriever.search is not a function","level":"error","message":"RAG节点失败","timestamp":"2026-09-05 15:43:51"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition节点失败","timestamp":"2026-09-05 15:43:51"}
+{"error":"hybridRetriever.search is not a function","level":"error","message":"Nutrition RAG失败","timestamp":"2026-09-05 17:07:26"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:07:26"}
+{"error":"hybridRetriever.search is not a function","level":"error","message":"Fitness RAG失败","timestamp":"2026-09-05 17:07:29"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Fitness推理失败","timestamp":"2026-09-05 17:07:29"}
+{"error":"response is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.","level":"error","message":"Tool Agent失败","timestamp":"2026-09-05 17:07:32"}
+{"error":"response is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.","level":"error","message":"Tool Agent失败","timestamp":"2026-09-05 17:07:36"}
+{"error":"hybridRetriever.search is not a function","level":"error","message":"Nutrition RAG失败","timestamp":"2026-09-05 17:07:36"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:07:36"}
+{"error":"response is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.","level":"error","message":"Tool Agent失败","timestamp":"2026-09-05 17:07:44"}
+{"error":"hybridRetriever.search is not a function","level":"error","message":"Nutrition RAG失败","timestamp":"2026-09-05 17:07:44"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:07:44"}
+{"error":"response is already being used as a state attribute (a.k.a. a channel), cannot also be used as a node name.","level":"error","message":"Tool Agent失败","timestamp":"2026-09-05 17:07:48"}
+{"error":"hybridRetriever.search is not a function","level":"error","message":"Nutrition RAG失败","timestamp":"2026-09-05 17:07:48"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:07:48"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:12:33"}
+{"error":"","level":"error","message":"ES检索失败，降级到内存搜索","timestamp":"2026-09-05 17:12:39"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:12:39"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:12:42"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Fitness推理失败","timestamp":"2026-09-05 17:12:42"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:12:59"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:12:59"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:13:24"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:13:24"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:13:37"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:13:37"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:13:40"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Fitness推理失败","timestamp":"2026-09-05 17:13:40"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:13:54"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:13:54"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:14:08"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:14:08"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-05 17:14:15"}
+{"error":"Cannot read properties of undefined (reading 'replace')","level":"error","message":"Nutrition推理失败","timestamp":"2026-09-05 17:14:15"}

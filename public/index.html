@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#c7ff2e">
+  <meta name="background-color" content="#fff9e8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="慢慢瘦">
+  <meta name="application-name" content="慢慢瘦">
+  <meta name="format-detection" content="telephone=no">
+  <title>慢慢瘦</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/maskable-icon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/css/style.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#ecfdf5',100:'#d1fae5',200:'#a7f3d0',300:'#6ee7b7',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#065f46',900:'#064e3b' },
+            accent: { 50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',500:'#f97316',600:'#ea580c' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- ════════════ Toast 提示 ════════════ -->
+  <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2"></div>
+  <div id="app-bubble-layer" class="app-bubble-layer pointer-events-none"></div>
+
+  <!-- ════════════ 登录/注册页 ════════════ -->
+  <div id="auth-page" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 shadow-lg mb-4">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800">慢慢瘦</h1>
+        <p class="text-gray-500 mt-2">科学减脂，健康生活</p>
+      </div>
+
+      <!-- 登录/注册卡片 -->
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Tab 切换 -->
+        <div class="flex mb-6 bg-gray-100 rounded-xl p-1">
+          <button onclick="switchAuthTab('login')" id="auth-tab-login" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all bg-white shadow text-primary-600">登录</button>
+          <button onclick="switchAuthTab('register')" id="auth-tab-register" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all text-gray-500">注册</button>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+              <input type="text" id="login-username" required class="input-field" placeholder="输入用户名">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+              <input type="password" id="login-password" required class="input-field" placeholder="输入密码">
+            </div>
+            <button type="submit" class="btn-primary w-full">登 录</button>
+          </div>
+        </form>
+
+        <!-- 注册表单 -->
+        <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">头像</label>
+              <div class="auth-avatar-picker">
+                <div id="reg-avatar-preview" class="auth-avatar-preview">我</div>
+                <label for="reg-avatar-input" class="neo-mini-btn cursor-pointer select-none">上传头像</label>
+                <input type="file" id="reg-avatar-input" accept="image/*" class="hidden" onchange="handleRegisterAvatar(this.files?.[0])">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+              <input type="text" id="reg-username" required class="input-field" placeholder="2-20个字符">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+              <input type="password" id="reg-password" required minlength="6" class="input-field" placeholder="至少6位">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">确认密码</label>
+              <input type="password" id="reg-password2" required minlength="6" class="input-field" placeholder="再次输入密码">
+            </div>
+            <button type="submit" class="btn-primary w-full">注 册</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 主应用 ════════════ -->
+  <div id="main-app" class="hidden min-h-screen pb-20 lg:pb-0 lg:pl-64">
+    <div class="phone-statusbar lg:hidden">
+      <span id="statusbar-time">09:41</span>
+      <div class="statusbar-signals">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- 桌面侧边栏 -->
+    <aside id="sidebar" class="hidden lg:flex fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 flex-col z-40">
+      <div class="p-6 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="font-bold text-gray-800">慢慢瘦</h2>
+            <p id="sidebar-username" class="text-xs text-gray-400"></p>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1" id="sidebar-nav"></nav>
+      <div class="p-4 border-t border-gray-100">
+        <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          退出登录
+        </button>
+      </div>
+    </aside>
+
+    <!-- 顶部栏（移动端） -->
+    <header class="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-gray-200">
+      <div class="flex items-center justify-between px-4 h-14">
+        <h1 class="font-bold text-gray-800">慢慢瘦</h1>
+        <div class="flex items-center gap-2">
+          <button onclick="openModal('about-modal')" class="p-2 text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </button>
+          <button onclick="switchTab('me')" id="top-avatar-btn" class="top-avatar-btn" aria-label="进入我的">
+            <span id="top-avatar-initial">我</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 内容区域 -->
+    <main class="app-screen p-4 lg:p-8 max-w-5xl mx-auto">
+      <!-- ──── 仪表盘 Tab ──── -->
+      <section id="tab-dashboard" class="tab-content">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">今日概览</h2>
+
+        <!-- 热量环图 + 摘要 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-4">今日热量</h3>
+          <div class="calorie-rings-clean">
+            <button type="button" class="calorie-ring-card" onclick="switchTab('food')">
+              <div class="ring-wrap">
+                <canvas id="calorie-ring-main"></canvas>
+                <div class="ring-center">
+                  <strong id="calorie-percent">--</strong>
+                  <span>已摄入</span>
+                </div>
+              </div>
+              <p><span id="calorie-current">--</span> / <span id="calorie-ring-target">--</span> kcal</p>
+            </button>
+            <button type="button" class="calorie-ring-card" onclick="switchTab('food')">
+              <div class="ring-wrap">
+                <canvas id="calorie-ring-remaining"></canvas>
+                <div class="ring-center">
+                  <strong id="remaining-kcal">--</strong>
+                  <span>还可</span>
+                </div>
+              </div>
+              <p><span>kcal</span> 剩余</p>
+            </button>
+            <button type="button" class="calorie-ring-card" onclick="switchTab('exercise')">
+              <div class="ring-wrap">
+                <canvas id="calorie-ring-exercise"></canvas>
+                <div class="ring-center">
+                  <strong id="exercise-need">--</strong>
+                  <span>还需</span>
+                </div>
+              </div>
+              <p><span>kcal</span> 运动</p>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 hidden">
+          <div class="hidden">
+            <h3 class="text-sm font-medium text-gray-500 mb-4">今日热量</h3>
+            <div class="relative w-48 h-48">
+              <canvas id="calorie-chart"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="calorie-remaining" class="text-2xl font-bold text-primary-600">0</span>
+                <span class="text-xs text-gray-400">剩余 kcal</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white rounded-2xl shadow-sm p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center"><span class="text-lg">🔥</span></div>
+                <span class="text-xs text-gray-500">已摄入</span>
+              </div>
+              <p id="calorie-intake" class="text-xl font-bold text-gray-800">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center"><span class="text-lg">🏃</span></div>
+                <span class="text-xs text-gray-500">运动消耗</span>
+              </div>
+              <p id="calorie-burned" class="text-xl font-bold text-gray-800">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center"><span class="text-lg">🎯</span></div>
+                <span class="text-xs text-gray-500">目标热量</span>
+              </div>
+              <p id="calorie-target" class="text-xl font-bold text-gray-800">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center"><span class="text-lg">⚡</span></div>
+                <span class="text-xs text-gray-500">净摄入</span>
+              </div>
+              <p id="calorie-net" class="text-xl font-bold text-gray-800">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 打卡状态 + 水分 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-gray-500">今日打卡</h3>
+              <div class="flex items-center gap-1">
+                <span class="text-lg">🔥</span>
+                <span id="streak-count" class="text-xl font-bold text-accent-500">0</span>
+                <span class="text-xs text-gray-400">天连续</span>
+              </div>
+            </div>
+            <div class="flex justify-around mb-4">
+              <button type="button" id="check-food" class="check-item" onclick="switchTab('food')" aria-label="进入饮食页面"><span class="text-2xl">🍽️</span><span class="text-xs">饮食</span></button>
+              <button type="button" id="check-exercise" class="check-item" onclick="switchTab('exercise')" aria-label="进入运动页面"><span class="text-2xl">🏃</span><span class="text-xs">运动</span></button>
+              <button type="button" id="check-water" class="check-item" onclick="openWaterSheet()" aria-label="打开饮水记录"><span class="text-2xl">💧</span><span class="text-xs">饮水</span></button>
+            </div>
+            <div class="dashboard-check-actions">
+              <button type="button" onclick="openTodayWeightSheet()">⚖️ 记录体重</button>
+              <button type="button" onclick="openReminderSettingsSheet()">⏰ 设置提醒</button>
+            </div>
+            <p id="streak-message" class="text-center text-sm text-gray-400"></p>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">水分摄入</h3>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                <div id="water-progress-bar" class="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full transition-all duration-500" style="width:0%"></div>
+              </div>
+              <span id="water-progress-text" class="text-sm font-medium text-gray-600">0/2000ml</span>
+            </div>
+            <div class="flex gap-2 mt-3">
+              <button onclick="addWater(250)" class="water-chip flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><span>+250</span><small>ml</small></button>
+              <button onclick="addWater(350)" class="water-chip flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><span>+350</span><small>ml</small></button>
+              <button onclick="addWater(500)" class="water-chip flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"><span>+500</span><small>ml</small></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 打卡热力图日历 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-medium text-gray-500">打卡日历</h3>
+            <div class="flex items-center gap-2">
+              <button onclick="changeCalendarMonth(-1)" class="p-1 hover:bg-gray-100 rounded-lg transition-all" aria-label="上个月">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <span id="calendar-month-label" class="text-sm font-medium text-gray-700"></span>
+              <button onclick="changeCalendarMonth(1)" class="p-1 hover:bg-gray-100 rounded-lg transition-all" aria-label="下个月">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-7 gap-1 mb-1">
+            <span class="text-[10px] text-gray-400 text-center">一</span>
+            <span class="text-[10px] text-gray-400 text-center">二</span>
+            <span class="text-[10px] text-gray-400 text-center">三</span>
+            <span class="text-[10px] text-gray-400 text-center">四</span>
+            <span class="text-[10px] text-gray-400 text-center">五</span>
+            <span class="text-[10px] text-gray-400 text-center">六</span>
+            <span class="text-[10px] text-gray-400 text-center">日</span>
+          </div>
+          <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+        </div>
+
+        <!-- 体重进度 + 预估 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div id="weight-goal-card" class="bg-white rounded-2xl shadow-sm p-6 cursor-pointer hover:shadow-md transition-all" onclick="openWeightGoalModal()">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-medium text-gray-500">体重目标</h3>
+              <span class="text-xs text-primary-500 font-medium">点击设置</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span id="weight-current-display" class="text-gray-600">当前: --kg</span>
+              <span id="weight-target-display" class="text-primary-600">目标: --kg</span>
+            </div>
+            <div class="bg-gray-100 rounded-full h-3 overflow-hidden">
+              <div id="weight-progress-bar" class="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500" style="width:0%"></div>
+            </div>
+            <p id="weight-progress-text" class="text-xs text-gray-400 mt-2 text-center">完成 0%</p>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">减脂预估</h3>
+            <div class="text-center">
+              <p id="days-to-goal" class="text-3xl font-bold text-accent-500">--</p>
+              <p class="text-sm text-gray-400">预计达标天数</p>
+              <p id="goal-date" class="text-xs text-gray-400 mt-1">目标日期: --</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──── 饮食 Tab ──── -->
+      <section id="tab-food" class="tab-content hidden">
+        <div id="food-header-ring" class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400">今日摄入进度</p>
+              <p class="text-sm text-gray-600 mt-0.5">还可摄入 <span id="food-remaining-ring" class="text-orange-500 font-bold">--</span> kcal</p>
+            </div>
+            <div class="relative w-14 h-14 flex-shrink-0">
+              <canvas id="food-ring" class="w-full h-full"></canvas>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span id="food-ring-percent" class="text-[11px] font-bold text-gray-700">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">饮食记录</h2>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">AI 拍照记录</h3>
+              <p class="text-xs text-gray-400 mt-1">拍餐食照片，AI估算食物、分量和营养</p>
+            </div>
+            <div class="flex gap-2 flex-wrap justify-end">
+              <button type="button" onclick="openCanIEatPanel()" class="neo-mini-btn">我能吃吗</button>
+              <button type="button" onclick="openAiCameraModal()" class="btn-primary text-sm px-4">📸 拍照记录</button>
+            </div>
+          </div>
+          <input type="file" id="ai-food-photo-input" accept="image/*" class="ai-file-input" onchange="handleAiFoodPhoto(this.files?.[0])">
+          <div id="ai-food-loading" class="hidden mt-4 ai-loading-card">
+            <div class="ai-loader"></div>
+            <div>
+              <p class="font-bold text-gray-800">AI正在分析你的餐食...</p>
+              <p class="text-xs text-gray-500 mt-1">正在估算分量、热量和营养信息</p>
+            </div>
+          </div>
+          <div id="ai-food-result" class="hidden mt-4"></div>
+        </div>
+
+        <!-- 常吃食物快捷入口 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">🥗 常吃食物</h3>
+          <div id="frequent-foods-container">
+            <p class="text-center text-gray-400 text-sm py-4">记录更多食物后，常吃食物会出现在这里</p>
+          </div>
+        </div>
+
+        <!-- 搜索食物 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">搜索食物</h3>
+          <div class="relative">
+            <input type="text" id="food-search" class="input-field pr-10" placeholder="输入食物名称搜索..." oninput="searchFood(this.value)">
+            <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <!-- 搜索结果 -->
+          <div id="food-search-results" class="mt-3 max-h-64 overflow-y-auto hidden"></div>
+          <!-- 无结果提示 -->
+          <div id="food-no-result" class="hidden mt-3 text-center py-4">
+            <p class="text-gray-400 text-sm">未找到该食物</p>
+            <button onclick="openModal('custom-food-modal')" class="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium">✨ 手动添加自定义食物</button>
+          </div>
+        </div>
+
+        <!-- 添加食物表单 -->
+        <div id="add-food-form" class="bg-white rounded-2xl shadow-sm p-6 mb-4 hidden">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">添加饮食记录</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">食物名称</label>
+              <input type="text" id="food-name" class="input-field text-sm" readonly>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">热量(kcal/100g)</label>
+              <input type="number" id="food-cal" class="input-field text-sm" readonly>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">食用量(g)</label>
+              <input type="number" id="food-amount" class="input-field text-sm" placeholder="如: 200" oninput="calcFoodCalories()">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">餐次</label>
+              <select id="food-meal" class="input-field text-sm">
+                <option value="breakfast">早餐</option>
+                <option value="lunch">午餐</option>
+                <option value="dinner">晚餐</option>
+                <option value="snack">加餐</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center justify-between">
+            <span id="food-total-cal" class="text-lg font-bold text-primary-600">0 kcal</span>
+            <div class="flex gap-2">
+              <button onclick="cancelAddFood()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 rounded-xl transition-all">取消</button>
+              <button onclick="confirmAddFood()" class="btn-primary text-sm px-6">确认添加</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 饮食推荐 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">三餐推荐分配</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="text-center p-3 bg-orange-50 rounded-xl">
+              <p class="text-xs text-gray-500">早餐 30%</p>
+              <p id="rec-breakfast" class="text-lg font-bold text-orange-500">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+            <div class="text-center p-3 bg-yellow-50 rounded-xl">
+              <p class="text-xs text-gray-500">午餐 40%</p>
+              <p id="rec-lunch" class="text-lg font-bold text-yellow-600">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+            <div class="text-center p-3 bg-purple-50 rounded-xl">
+              <p class="text-xs text-gray-500">晚餐 30%</p>
+              <p id="rec-dinner" class="text-lg font-bold text-purple-500">0</p>
+              <p class="text-xs text-gray-400">kcal</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 餐次选食 -->
+        <div id="meal-food-picker" class="bg-white rounded-2xl shadow-sm p-6 mb-4 hidden">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 id="meal-picker-title" class="text-base font-bold text-gray-800">选择食物</h3>
+              <p id="meal-picker-subtitle" class="text-xs text-gray-400 mt-1">点击食物图片后填写食用量</p>
+            </div>
+            <button onclick="closeMealPicker()" class="px-3 py-2 text-sm text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all">返回</button>
+          </div>
+          <div id="food-category-tabs" class="meal-category-tabs"></div>
+          <div id="food-category-grid" class="food-card-grid mt-4"></div>
+        </div>
+
+        <!-- 今日饮食列表 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">今日饮食</h3>
+          <div id="food-list-today" class="space-y-2">
+            <p class="text-center text-gray-400 text-sm py-4">暂无记录</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──── 运动 Tab ──── -->
+      <section id="tab-exercise" class="tab-content hidden">
+        <div id="exercise-header-ring" class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs text-gray-400">今日运动进度</p>
+              <p class="text-sm text-gray-600 mt-0.5">还需运动 <span id="exercise-need-ring" class="text-blue-500 font-bold">--</span> kcal</p>
+            </div>
+            <div class="relative w-14 h-14 flex-shrink-0">
+              <canvas id="exercise-ring" class="w-full h-full"></canvas>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span id="exercise-ring-percent" class="text-[11px] font-bold text-gray-700">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">运动记录</h2>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="text-sm font-medium text-gray-500">常做运动</h3>
+            <span class="exercise-chip-soft">7天内</span>
+          </div>
+          <div id="frequent-exercises-container" class="exercise-frequent-grid">
+            <p class="exercise-empty-text">记录更多运动后，常做运动会出现在这里</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4 exercise-picker-card">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">选择运动</h3>
+              <p class="text-xs text-gray-400 mt-1">分类浏览，选运动后设置时长或开启计时</p>
+            </div>
+            <button type="button" onclick="openModal('custom-exercise-modal')" class="neo-mini-btn text-xs px-3 py-2">自定义</button>
+          </div>
+          <div id="exercise-category-tabs" class="exercise-category-tabs"></div>
+          <div id="exercise-card-grid" class="exercise-card-grid mt-4"></div>
+          <div id="exercise-duration-panel" class="exercise-duration-panel hidden"></div>
+        </div>
+
+        <div id="exercise-timer-card" class="exercise-timer-card hidden"></div>
+        <div id="exercise-summary-card" class="exercise-summary-card hidden"></div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-sm font-medium text-gray-500">本周运动</h3>
+            <span id="exercise-weekly-badge" class="exercise-chip-soft">0 kcal</span>
+          </div>
+          <div id="exercise-weekly-empty" class="exercise-empty-text hidden">本周还没有运动记录，动起来吧！</div>
+          <div class="exercise-chart-layout">
+            <div class="exercise-line-wrap">
+              <canvas id="exercise-weekly-chart"></canvas>
+            </div>
+            <div class="exercise-donut-wrap">
+              <canvas id="exercise-type-chart"></canvas>
+            </div>
+          </div>
+          <div class="exercise-stat-row mt-4">
+            <div><strong id="exercise-week-kcal">0</strong><span>kcal</span></div>
+            <div><strong id="exercise-week-min">0</strong><span>分钟</span></div>
+            <div><strong id="exercise-week-count">0</strong><span>次数</span></div>
+          </div>
+        </div>
+
+        <!-- 今日运动列表 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="text-sm font-medium text-gray-500">今日运动</h3>
+            <button type="button" onclick="scrollExercisePickerIntoView()" class="neo-mini-btn text-xs px-3 py-2">去选择运动</button>
+          </div>
+          <div id="exercise-list-today" class="space-y-2">
+            <p class="text-center text-gray-400 text-sm py-4">暂无记录</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──── 体重 Tab ──── -->
+      <section id="tab-weight" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">体重 & 身体数据</h2>
+
+        <!-- 体重录入 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">记录今日体重</h3>
+          <div class="flex gap-3">
+            <input type="number" id="weight-input" class="input-field flex-1" placeholder="输入体重(kg)" step="0.1">
+            <button onclick="addWeight()" class="btn-primary px-6">记录</button>
+          </div>
+        </div>
+
+        <!-- 体重趋势图 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">体重趋势（近30天）</h3>
+          <div class="h-64">
+            <canvas id="weight-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- BMI & 代谢 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <p class="text-xs text-gray-500">BMI</p>
+            <p id="bmi-value" class="text-xl font-bold text-gray-800">--</p>
+            <p id="bmi-status" class="text-xs text-primary-500">--</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <p class="text-xs text-gray-500">BMR</p>
+            <p id="bmr-value" class="text-xl font-bold text-gray-800">--</p>
+            <p class="text-xs text-gray-400">kcal/天</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <p class="text-xs text-gray-500">TDEE</p>
+            <p id="tdee-value" class="text-xl font-bold text-gray-800">--</p>
+            <p class="text-xs text-gray-400">kcal/天</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-4 text-center">
+            <p class="text-xs text-gray-500">减脂目标</p>
+            <p id="target-cal-value" class="text-xl font-bold text-accent-500">--</p>
+            <p class="text-xs text-gray-400">kcal/天</p>
+          </div>
+        </div>
+
+        <!-- 个人信息设置 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">个人信息</h3>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">性别</label>
+              <select id="profile-gender" class="input-field text-sm" onchange="saveProfile()">
+                <option value="male">男</option>
+                <option value="female">女</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">年龄</label>
+              <input type="number" id="profile-age" class="input-field text-sm" onchange="saveProfile()" min="10" max="100">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">身高(cm)</label>
+              <input type="number" id="profile-height" class="input-field text-sm" onchange="saveProfile()" step="0.1">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">体重(kg)</label>
+              <input type="number" id="profile-weight" class="input-field text-sm" onchange="saveProfile()" step="0.1">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">目标体重(kg)</label>
+              <input type="number" id="profile-target-weight" class="input-field text-sm" onchange="saveProfile()" step="0.1">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">活动水平</label>
+              <select id="profile-activity" class="input-field text-sm" onchange="saveProfile()">
+                <option value="sedentary">久坐(几乎不运动)</option>
+                <option value="light">轻度(每周1-3次)</option>
+                <option value="moderate">中度(每周3-5次)</option>
+                <option value="heavy">高度(每天运动)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提醒设置 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mt-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-4">⏰ 提醒设置</h3>
+          <div id="notification-permission" class="hidden mb-4 p-3 bg-yellow-50 rounded-xl">
+            <p class="text-xs text-yellow-700 mb-2">浏览器通知未开启，部分提醒将无法显示</p>
+            <button onclick="requestNotificationPermission()" class="text-xs text-yellow-800 font-medium underline">开启通知权限</button>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">⚖️</span>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">称重提醒</p>
+                  <p class="text-xs text-gray-400">每天提醒你记录体重</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="time" id="reminder-weigh-time" class="input-field text-sm w-28" value="08:00" onchange="saveReminders()">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="reminder-weigh-enabled" class="sr-only peer" onchange="saveReminders()">
+                  <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">💧</span>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">喝水提醒</p>
+                  <p class="text-xs text-gray-400">定期提醒你喝水</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select id="reminder-water-interval" class="input-field text-sm w-28" onchange="saveReminders()">
+                  <option value="60">每1小时</option>
+                  <option value="120" selected>每2小时</option>
+                  <option value="180">每3小时</option>
+                </select>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="reminder-water-enabled" class="sr-only peer" onchange="saveReminders()">
+                  <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">🏃</span>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">运动提醒</p>
+                  <p class="text-xs text-gray-400">每天提醒你运动</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="time" id="reminder-exercise-time" class="input-field text-sm w-28" value="18:00" onchange="saveReminders()">
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="reminder-exercise-enabled" class="sr-only peer" onchange="saveReminders()">
+                  <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-weight-card mt-4" onclick="openTodayWeightSheet()">
+          <div>
+            <p class="brutal-kicker">TODAY WEIGHT</p>
+            <h3>今日体重</h3>
+            <strong id="dashboard-weight-current">--</strong>
+            <span>kg</span>
+          </div>
+          <div class="dashboard-weight-side">
+            <p>目标 <b id="dashboard-weight-target">--kg</b></p>
+            <p>剩余 <b id="dashboard-weight-days">--天</b></p>
+            <div class="dashboard-weight-progress"><i id="dashboard-weight-progress-bar" style="width:0%"></i></div>
+            <small id="dashboard-weight-progress-text">完成 0%</small>
+            <button type="button" class="dashboard-mini-action" onclick="event.stopPropagation();openTodayWeightSheet()">记录体重</button>
+          </div>
+        </div>
+
+        <div class="dashboard-reminder-card mt-4">
+          <div class="flex items-center gap-3">
+            <span class="dashboard-reminder-icon">⏰</span>
+            <div>
+              <h3>每日称重提醒</h3>
+              <p>提醒有助养成好习惯</p>
+            </div>
+          </div>
+          <div class="dashboard-reminder-actions">
+            <button type="button" onclick="openReminderSettingsSheet()" id="dashboard-weigh-time">08:00</button>
+            <label class="neo-switch">
+              <input type="checkbox" id="dashboard-weigh-enabled" onchange="toggleDashboardWeighReminder(this.checked)">
+              <span></span>
+            </label>
+          </div>
+          <button type="button" class="dashboard-full-action" onclick="openReminderSettingsSheet()">设置称重 / 喝水 / 运动提醒</button>
+        </div>
+      </section>
+
+      <!-- ──── 饮水 Tab ──── -->
+      <section id="tab-water" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">饮水记录</h2>
+
+        <!-- 饮水进度 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div class="flex items-center justify-center mb-6">
+            <div class="relative w-40 h-40">
+              <canvas id="water-chart"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="water-amount-display" class="text-3xl font-bold text-blue-500">0</span>
+                <span class="text-xs text-gray-400">/ 2000 ml</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <button onclick="addWater(250)" class="water-chip py-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium rounded-xl transition-all">
+              <span>+250</span><small>ml</small>
+            </button>
+            <button onclick="addWater(350)" class="water-chip py-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium rounded-xl transition-all">
+              <span>+350</span><small>ml</small>
+            </button>
+            <button onclick="addWater(500)" class="water-chip py-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium rounded-xl transition-all">
+              <span>+500</span><small>ml</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- 今日饮水列表 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">今日饮水记录</h3>
+          <div id="water-list-today" class="space-y-2">
+            <p class="text-center text-gray-400 text-sm py-4">暂无记录</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-me" class="tab-content hidden">
+        <div class="me-page">
+          <div class="me-hero-card">
+            <div class="me-avatar" id="me-avatar-large">我</div>
+            <h2 id="me-username">用户</h2>
+            <p><span id="me-checkin-days">累计记录0天</span> · <span id="me-joined-days">加入0天</span></p>
+          </div>
+
+          <div class="me-quick-grid">
+            <button type="button" onclick="openAiCoachPanel()"><span>🤖</span><strong>AI私教</strong></button>
+            <button type="button" onclick="openMyPlanSheet()"><span>🎯</span><strong>我的计划</strong></button>
+            <button type="button" onclick="openBodyProfileSheet()"><span>📊</span><strong>身体档案</strong></button>
+          </div>
+
+          <div class="me-action-list">
+            <button type="button" onclick="openMyHistorySheet()"><span>📅 历史记录</span><b>→</b></button>
+            <button type="button" onclick="openMyStatsSheet()"><span>📈 打卡统计</span><b>→</b></button>
+          </div>
+
+          <div class="me-divider"></div>
+          <h3 class="me-section-title">设置</h3>
+          <div class="me-settings-list">
+            <button type="button" onclick="openBodyProfileSheet()">个人信息 <b>→</b></button>
+            <button type="button" onclick="openModal('about-modal')">关于我们 <b>→</b></button>
+            <button type="button" onclick="handleLogout()" class="danger">退出登录</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──── 历史 Tab ──── -->
+      <section id="tab-history" class="tab-content hidden">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">历史记录</h2>
+
+        <!-- 日期选择 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div class="flex items-center gap-3">
+            <button onclick="changeHistoryDate(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <input type="date" id="history-date" class="input-field flex-1" onchange="loadHistory()">
+            <button onclick="changeHistoryDate(1)" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 统计报告 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-medium text-gray-500">统计报告</h3>
+            <div class="flex bg-gray-100 rounded-xl p-1">
+              <button onclick="switchStatsPeriod('week')" id="stats-btn-week" class="px-3 py-1 text-xs font-medium rounded-lg bg-white shadow text-primary-600">本周</button>
+              <button onclick="switchStatsPeriod('month')" id="stats-btn-month" class="px-3 py-1 text-xs font-medium rounded-lg text-gray-500">本月</button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="flex items-center justify-between text-sm mb-1">
+              <span class="text-gray-500">打卡 <span id="stats-checkin-days" class="font-bold text-primary-600">0</span>/<span id="stats-total-days">0</span> 天</span>
+              <span id="stats-checkin-pct" class="text-xs text-gray-400">0%</span>
+            </div>
+            <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div id="stats-checkin-bar" class="h-full bg-primary-400 rounded-full transition-all duration-500" style="width:0%"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div class="text-center p-3 bg-primary-50 rounded-xl">
+              <p class="text-xs text-gray-500">体重变化</p>
+              <p id="stats-weight-change" class="text-lg font-bold text-primary-600">--</p>
+            </div>
+            <div class="text-center p-3 bg-orange-50 rounded-xl">
+              <p class="text-xs text-gray-500">日均摄入</p>
+              <p id="stats-avg-intake" class="text-lg font-bold text-orange-500">--</p>
+              <p class="text-[10px] text-gray-400">kcal</p>
+            </div>
+            <div class="text-center p-3 bg-blue-50 rounded-xl">
+              <p class="text-xs text-gray-500">日均消耗</p>
+              <p id="stats-avg-burned" class="text-lg font-bold text-blue-500">--</p>
+              <p class="text-[10px] text-gray-400">kcal</p>
+            </div>
+            <div class="text-center p-3 bg-cyan-50 rounded-xl">
+              <p class="text-xs text-gray-500">日均饮水</p>
+              <p id="stats-avg-water" class="text-lg font-bold text-cyan-500">--</p>
+              <p class="text-[10px] text-gray-400">ml</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-around text-sm text-gray-600 py-2 bg-gray-50 rounded-xl">
+            <span>🏃 运动 <strong id="stats-exercise-count">0</strong> 次</span>
+            <span>⏱️ 总计 <strong id="stats-exercise-min">0</strong> 分钟</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">统计体重趋势</h3>
+            <div class="h-64">
+              <canvas id="stats-weight-chart"></canvas>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">每日热量趋势</h3>
+            <div class="h-64">
+              <canvas id="stats-daily-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 历史数据 -->
+        <div id="history-content" class="space-y-4">
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">体重</h3>
+            <p id="history-weight" class="text-gray-400 text-sm">暂无数据</p>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">饮食</h3>
+            <div id="history-food" class="text-gray-400 text-sm">暂无数据</div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">运动</h3>
+            <div id="history-exercise" class="text-gray-400 text-sm">暂无数据</div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-sm font-medium text-gray-500 mb-3">饮水</h3>
+            <div id="history-water" class="text-gray-400 text-sm">暂无数据</div>
+          </div>
+        </div>
+
+        <!-- 体重历史图表 -->
+        <div class="bg-white rounded-2xl shadow-sm p-6 mt-4">
+          <h3 class="text-sm font-medium text-gray-500 mb-3">体重趋势</h3>
+          <div class="h-64">
+            <canvas id="history-weight-chart"></canvas>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 底部 Tab 导航（移动端） -->
+    <button type="button" class="neo-fab" onclick="openBrutalPanel('quick')" aria-label="打开快捷操作">+</button>
+    <button type="button" id="xiaoshou-float" class="xiaoshou-float" onclick="openAiCoachPanel()" aria-label="问问小瘦">
+      <span class="xiaoshou-bot">🤖</span>
+      <i id="xiaoshou-badge" class="xiaoshou-badge"></i>
+      <em>问问小瘦</em>
+    </button>
+
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 z-40 safe-area-bottom">
+      <div class="flex justify-around items-center h-16" id="bottom-nav"></div>
+    </nav>
+  </div>
+
+  <div id="brutal-modal" class="brutal-modal hidden">
+    <div class="brutal-backdrop" onclick="closeBrutalPanel()"></div>
+    <div id="brutal-panel" class="brutal-panel">
+      <div class="brutal-panel-head">
+        <div>
+          <p id="brutal-panel-kicker" class="brutal-kicker">APP PANEL</p>
+          <h3 id="brutal-panel-title">快捷操作</h3>
+        </div>
+        <button type="button" class="neo-icon-btn" onclick="closeBrutalPanel()" aria-label="关闭">×</button>
+      </div>
+      <div id="brutal-panel-body" class="brutal-panel-body"></div>
+    </div>
+  </div>
+
+  <div id="user-bottom-sheet" class="user-sheet hidden">
+    <div class="user-sheet-backdrop" onclick="closeUserSheet()"></div>
+    <div class="user-sheet-panel">
+      <div class="user-sheet-grip"></div>
+      <div class="user-sheet-head">
+        <div>
+          <p id="user-sheet-kicker" class="brutal-kicker">MY MODULE</p>
+          <h3 id="user-sheet-title">我的</h3>
+        </div>
+        <button type="button" onclick="closeUserSheet()" class="neo-icon-btn">×</button>
+      </div>
+      <div id="user-sheet-body" class="user-sheet-body"></div>
+    </div>
+  </div>
+
+  <div id="ai-coach-sheet" class="ai-coach-sheet hidden">
+    <div class="ai-coach-backdrop" onclick="closeAiCoachPanel()"></div>
+    <section class="ai-coach-panel" aria-label="AI私教小瘦">
+      <div class="ai-coach-grip"></div>
+      <header class="ai-coach-head">
+        <div class="ai-coach-title">
+          <span>🤖</span>
+          <div>
+            <p>AI PRIVATE COACH</p>
+            <h3>小瘦</h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeAiCoachPanel()" class="neo-icon-btn" aria-label="关闭小瘦">×</button>
+      </header>
+
+      <!-- Agent选择器 -->
+      <div class="agent-selector">
+        <button type="button" class="agent-btn active" data-agent="auto" onclick="selectAgent('auto')">
+          🤖 智能路由
+        </button>
+        <button type="button" class="agent-btn" data-agent="nutrition_agent" onclick="selectAgent('nutrition_agent')">
+          🥗 营养专家
+        </button>
+        <button type="button" class="agent-btn" data-agent="fitness_agent" onclick="selectAgent('fitness_agent')">
+          💪 健身教练
+        </button>
+      </div>
+
+      <div id="ai-coach-messages" class="ai-coach-messages"></div>
+      <div id="ai-coach-quick" class="ai-coach-quick"></div>
+      <form class="ai-coach-inputbar" onsubmit="sendAiCoachMessage(); return false;">
+        <input id="ai-coach-input" type="text" autocomplete="off" maxlength="800" placeholder="和小瘦说点什么...">
+        <button type="submit" aria-label="发送">➤</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="ai-camera-modal" class="brutal-modal center hidden">
+    <div class="brutal-backdrop" onclick="closeAiCameraModal()"></div>
+    <div class="ai-camera-panel">
+      <div class="brutal-panel-head">
+        <div>
+          <p class="brutal-kicker">AI FOOD SCAN</p>
+          <h3>拍照识别餐食</h3>
+        </div>
+        <button type="button" onclick="closeAiCameraModal()" class="neo-icon-btn">×</button>
+      </div>
+      <div class="ai-camera-view">
+        <video id="ai-camera-video" autoplay playsinline muted></video>
+        <div id="ai-camera-placeholder" class="ai-camera-placeholder">
+          <strong>CAMERA</strong>
+          <span>点击开启摄像头</span>
+        </div>
+        <div class="ai-scan-frame">
+          <i></i><i></i><i></i><i></i>
+          <span></span>
+        </div>
+        <div id="ai-camera-status" class="ai-camera-status">准备扫描食物</div>
+      </div>
+      <canvas id="ai-camera-canvas" class="hidden"></canvas>
+      <div class="ai-camera-actions">
+        <button type="button" onclick="startAiCamera()" class="neo-mini-btn">开启相机</button>
+        <button type="button" onclick="captureAiCameraPhoto()" class="btn-primary">拍照扫描</button>
+        <label for="ai-food-photo-input" class="neo-mini-btn cursor-pointer select-none">相册导入</label>
+      </div>
+      <p class="ai-camera-note">识别到食物后才会生成结果卡片，识别不确定时请重新拍摄或从相册导入。</p>
+    </div>
+  </div>
+
+  <div id="can-i-eat-sheet" class="can-eat-sheet hidden">
+    <div class="can-eat-backdrop" onclick="closeCanIEatPanel()"></div>
+    <section class="can-eat-panel" aria-label="我能吃吗">
+      <header class="can-eat-head">
+        <div>
+          <p class="brutal-kicker">FOOD SANDBOX</p>
+          <h3>我能吃吗</h3>
+        </div>
+        <button type="button" onclick="closeCanIEatPanel()" class="neo-icon-btn" aria-label="关闭">×</button>
+      </header>
+      <div class="can-eat-form">
+        <label>
+          <span>食物</span>
+          <input id="can-eat-name" type="text" class="input-field" placeholder="例如：炸鸡套餐" oninput="handleCanIEatNameInput()">
+        </label>
+        <div class="grid grid-cols-2 gap-3">
+          <label>
+            <span>热量/100g</span>
+            <input id="can-eat-cal" type="number" min="1" class="input-field" placeholder="可不填" oninput="handleCanIEatCalorieInput()">
+            <small id="can-eat-cal-source" class="can-eat-cal-source">输入食物名后自动匹配热量</small>
+          </label>
+          <label>
+            <span>分量 g</span>
+            <input id="can-eat-amount" type="number" min="1" class="input-field" placeholder="例如 200">
+          </label>
+        </div>
+        <label>
+          <span>餐次</span>
+          <select id="can-eat-meal" class="input-field">
+            <option value="breakfast">早餐</option>
+            <option value="lunch">午餐</option>
+            <option value="dinner">晚餐</option>
+            <option value="snack">加餐</option>
+          </select>
+        </label>
+        <div class="can-eat-actions">
+          <button type="button" onclick="openCanIEatCamera()" class="neo-mini-btn">拍照判断</button>
+          <button type="button" id="can-eat-estimate-btn" onclick="estimateCanIEatCalorie()" class="neo-mini-btn can-eat-estimate-btn">AI估算热量</button>
+          <button type="button" onclick="submitCanIEatManual()" class="btn-primary">开始判断</button>
+        </div>
+      </div>
+      <div id="can-eat-loading" class="hidden ai-loading-card mt-4">
+        <div class="ai-loader"></div>
+        <div>
+          <p class="font-bold text-gray-800">小瘦正在推演...</p>
+          <p class="text-xs text-gray-500 mt-1">先算预算，再生成吃法建议</p>
+        </div>
+      </div>
+      <div id="can-eat-result" class="can-eat-result"></div>
+    </section>
+  </div>
+
+  <div id="weight-goal-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeWeightGoalModal()"></div>
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-lg font-bold text-gray-800">设置减脂目标</h3>
+        <button onclick="closeWeightGoalModal()" class="p-1 hover:bg-gray-100 rounded-full" aria-label="关闭">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">当前体重</label>
+          <input type="number" id="modal-current-weight" class="input-field" readonly>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">目标体重 <span class="text-red-400">*</span></label>
+          <input type="number" id="modal-target-weight" class="input-field" placeholder="例如 60" step="0.1" oninput="calcPlanPreview()">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">目标日期 <span class="text-red-400">*</span></label>
+          <input type="date" id="modal-target-date" class="input-field" oninput="calcPlanPreview()">
+        </div>
+        <div id="plan-preview" class="hidden bg-gradient-to-br from-primary-50 to-green-50 rounded-xl p-4 space-y-3 border border-primary-100">
+          <p class="text-sm font-semibold text-primary-700">AI 建议计划</p>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="text-center p-2 bg-white/70 rounded-lg">
+              <p class="text-gray-400 text-xs">每日摄入目标</p>
+              <p class="text-lg font-bold text-primary-600"><span id="preview-intake">--</span> kcal</p>
+            </div>
+            <div class="text-center p-2 bg-white/70 rounded-lg">
+              <p class="text-gray-400 text-xs">每日运动目标</p>
+              <p class="text-lg font-bold text-orange-500"><span id="preview-exercise">--</span> kcal</p>
+            </div>
+          </div>
+          <p id="preview-warning" class="text-xs text-orange-600 hidden"></p>
+          <p id="preview-days" class="text-xs text-gray-500"></p>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="closeWeightGoalModal()" class="flex-1 py-2.5 text-sm text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all">取消</button>
+        <button onclick="saveWeightGoal()" class="flex-1 py-2.5 text-sm text-white bg-primary-500 rounded-xl hover:bg-primary-600 transition-all">保存目标</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 模态框: 自定义食物 ════════════ -->
+  <div id="custom-food-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('custom-food-modal')"></div>
+    <div class="modal-content">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">自定义食物</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">食物名称</label>
+          <input type="text" id="custom-food-name" class="input-field text-sm" placeholder="如: 红烧排骨">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">热量(kcal/100g)</label>
+          <input type="number" id="custom-food-cal" class="input-field text-sm" placeholder="如: 250">
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="custom-food-save" checked class="w-4 h-4 text-primary-600 rounded">
+          <label for="custom-food-save" class="text-sm text-gray-600">收藏到"我的食物"</label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">食用量(g)</label>
+            <input type="number" id="custom-food-amount" class="input-field text-sm" placeholder="如: 200">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">餐次</label>
+            <select id="custom-food-meal" class="input-field text-sm">
+              <option value="breakfast">早餐</option>
+              <option value="lunch">午餐</option>
+              <option value="dinner">晚餐</option>
+              <option value="snack">加餐</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="closeModal('custom-food-modal')" class="flex-1 py-2.5 text-sm text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all">取消</button>
+        <button onclick="addCustomFood()" class="flex-1 py-2.5 text-sm text-white bg-primary-500 rounded-xl hover:bg-primary-600 transition-all">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 模态框: 自定义运动 ════════════ -->
+  <div id="custom-exercise-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('custom-exercise-modal')"></div>
+    <div class="modal-content">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">自定义运动</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">运动名称</label>
+          <input type="text" id="custom-exercise-name" class="input-field text-sm" placeholder="如: 跳操">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">时长(分钟)</label>
+          <input type="number" id="custom-exercise-duration" class="input-field text-sm" placeholder="如: 30">
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">消耗热量(kcal)</label>
+          <input type="number" id="custom-exercise-cal" class="input-field text-sm" placeholder="如: 200">
+        </div>
+      </div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="closeModal('custom-exercise-modal')" class="flex-1 py-2.5 text-sm text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all">取消</button>
+        <button onclick="addCustomExercise()" class="flex-1 py-2.5 text-sm text-white bg-primary-500 rounded-xl hover:bg-primary-600 transition-all">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ 模态框: 关于 ════════════ -->
+  <div id="about-modal" class="modal hidden">
+    <div class="modal-backdrop" onclick="closeModal('about-modal')"></div>
+    <div class="modal-content">
+      <div class="text-center mb-4">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 mb-3">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800">减脂健康助手</h3>
+        <p class="text-xs text-gray-400">v1.0.0</p>
+      </div>
+      <div class="text-sm text-gray-600 space-y-2">
+        <p>🔍 <strong>BMR 公式</strong>：Mifflin-St Jeor</p>
+        <p class="text-xs text-gray-400 pl-5">男: 10×体重 + 6.25×身高 - 5×年龄 + 5</p>
+        <p class="text-xs text-gray-400 pl-5">女: 10×体重 + 6.25×身高 - 5×年龄 - 161</p>
+        <p>🎯 <strong>减脂方案</strong>：TDEE - 500kcal/天</p>
+        <p>⚖️ <strong>1kg 脂肪</strong> ≈ 7700 kcal</p>
+      </div>
+      <div class="mt-4 p-3 bg-yellow-50 rounded-xl text-xs text-yellow-700">
+        ⚠️ 免责声明：本应用数据仅供参考，不构成医疗建议。如有健康问题请咨询专业医生。
+      </div>
+      <button onclick="closeModal('about-modal')" class="w-full mt-4 py-2.5 text-sm text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all">关闭</button>
+    </div>
+  </div>
+
+  <!-- ════════════ 脚本 ════════════ -->
+  <script src="/js/food-db.js"></script>
+  <script src="/js/food-images.js"></script>
+  <script src="/js/can-i-eat-calorie.js"></script>
+  <script src="/js/exercise-db.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/ai-coach-rules.js"></script>
+  <script src="/js/app.js?v=3"></script>
+</body>
+</html>

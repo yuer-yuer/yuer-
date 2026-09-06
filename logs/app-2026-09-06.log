@@ -1,0 +1,157 @@
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 00:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 01:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 02:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 03:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 04:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 05:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 06:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-05.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 07:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 08:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 09:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 10:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 11:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 12:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 13:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 14:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 15:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 16:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 17:16:25"}
+{"level":"info","message":"记录午餐：一份鸡胸肉","timestamp":"2026-09-06 18:13:02","userId":1}
+{"level":"info","message":"Router节点: 开始LLM路由决策","timestamp":"2026-09-06 18:13:02","userQuery":"记录午餐：一份鸡胸肉"}
+{"agents":["tool_agent"],"level":"info","message":"路由决策完成","mode":"single","reasoning":"用户需求是单纯记录午餐食物（一份鸡胸肉），属于数据录入操作，无需分析或咨询，仅需调用tool_agent完成记录。","timestamp":"2026-09-06 18:13:04"}
+{"agents":["tool_agent"],"level":"info","message":"路由条件边: 决策","mode":"single","timestamp":"2026-09-06 18:13:04"}
+{"level":"info","message":"进入Tool Agent","timestamp":"2026-09-06 18:13:04"}
+{"level":"info","message":"Tool调用节点: 分析需要的工具","timestamp":"2026-09-06 18:13:04","userQuery":"记录午餐：一份鸡胸肉"}
+{"hasToolCalls":true,"level":"info","message":"工具调用分析完成","timestamp":"2026-09-06 18:13:04","toolCount":1}
+{"count":1,"level":"info","message":"Tool执行节点: 执行工具","timestamp":"2026-09-06 18:13:04"}
+{"args":{"food_name":"鸡胸肉"},"level":"info","message":"执行工具","timestamp":"2026-09-06 18:13:04","tool":"search_food_database"}
+{"food_name":"鸡胸肉","level":"info","message":"食物数据库中未找到","timestamp":"2026-09-06 18:13:04","userId":1}
+{"level":"info","message":"工具执行成功","timestamp":"2026-09-06 18:13:04","tool":"search_food_database"}
+{"level":"info","message":"Tool响应节点: 生成回复","timestamp":"2026-09-06 18:13:04"}
+{"level":"info","message":"Tool响应生成完成","timestamp":"2026-09-06 18:13:07"}
+{"hasResults":true,"level":"info","message":"Tool Agent完成","timestamp":"2026-09-06 18:13:07"}
+{"agents":["tool_agent"],"level":"info","message":"汇总节点: 整合结果","mode":"single","timestamp":"2026-09-06 18:13:07"}
+{"duration":4761,"executionFlow":["router","router","tool_agent","router","router","tool_agent","aggregator(single)"],"level":"info","message":"Multi-Agent执行完成","routingDecision":{"agents":["tool_agent"],"mode":"single","reasoning":"用户需求是单纯记录午餐食物（一份鸡胸肉），属于数据录入操作，无需分析或咨询，仅需调用tool_agent完成记录。"},"timestamp":"2026-09-06 18:13:07"}
+{"level":"info","message":"帮我查询今天的数据并分析一下","timestamp":"2026-09-06 18:13:08","userId":1}
+{"level":"info","message":"Router节点: 开始LLM路由决策","timestamp":"2026-09-06 18:13:08","userQuery":"帮我查询今天的数据并分析一下"}
+{"agents":["tool_agent","nutrition_agent","fitness_agent"],"level":"info","message":"路由决策完成","mode":"sequential","reasoning":"用户要求'查询今天的数据并分析'，需先由tool_agent查询今日饮食、运动、体重等原始数据；查询结果作为输入，再并行交由nutrition_agent和fitness_agent分别分析饮食健康性和运动有效性。但由于tool_agent的查询是分析的前提，必须先执行，因此整体为sequential模式，其中tool_agent为第一阶段，后续分析阶段逻辑上需并行，但受限于执行调度需在sequential框架下触发两个专家，故标准执行流为：先tool_agent → 再启动nutrition_agent和fitness_agent（即sequential含后续并行子阶段）。根据系统定义，'sequential'模式允许第一阶段输出作为后续多Agent输入，而此处后续分析需同时依赖同一数据源，因此最严谨的调度是：sequential模式，agents列表按执行依赖顺序排列，实际运行时在tool_agent完成后并行调用nutrition_agent和fitness_agent。","timestamp":"2026-09-06 18:13:13"}
+{"agents":["tool_agent","nutrition_agent","fitness_agent"],"level":"info","message":"路由条件边: 决策","mode":"sequential","timestamp":"2026-09-06 18:13:13"}
+{"level":"info","message":"进入Tool Agent","timestamp":"2026-09-06 18:13:13"}
+{"level":"info","message":"Tool调用节点: 分析需要的工具","timestamp":"2026-09-06 18:13:13","userQuery":"帮我查询今天的数据并分析一下"}
+{"hasToolCalls":true,"level":"info","message":"工具调用分析完成","timestamp":"2026-09-06 18:13:14","toolCount":1}
+{"count":1,"level":"info","message":"Tool执行节点: 执行工具","timestamp":"2026-09-06 18:13:14"}
+{"args":{},"level":"info","message":"执行工具","timestamp":"2026-09-06 18:13:14","tool":"query_today"}
+{"level":"info","message":"查询今日汇总","timestamp":"2026-09-06 18:13:14","totalCaloriesIn":0,"totalCaloriesOut":0,"userId":1}
+{"level":"info","message":"工具执行成功","timestamp":"2026-09-06 18:13:14","tool":"query_today"}
+{"level":"info","message":"Tool响应节点: 生成回复","timestamp":"2026-09-06 18:13:14"}
+{"level":"info","message":"Tool响应生成完成","timestamp":"2026-09-06 18:13:17"}
+{"hasResults":true,"level":"info","message":"Tool Agent完成","timestamp":"2026-09-06 18:13:17"}
+{"0":"n","1":"u","10":"a","11":"g","12":"e","13":"n","14":"t","2":"t","3":"r","4":"i","5":"t","6":"i","7":"o","8":"n","9":"_","level":"info","message":"Sequential第二步: 路由到","timestamp":"2026-09-06 18:13:17"}
+{"level":"info","message":"进入Nutrition Agent","timestamp":"2026-09-06 18:13:17"}
+{"level":"info","message":"Nutrition RAG节点: 开始检索","timestamp":"2026-09-06 18:13:17","userQuery":"帮我查询今天的数据并分析一下"}
+{"key":"manmanshou:embedding:1ls84o","level":"debug","message":"内存缓存已设置","timestamp":"2026-09-06 18:13:17","ttl":604800}
+{"level":"debug","message":"Embedding生成成功","provider":"dashscope","textLength":14,"timestamp":"2026-09-06 18:13:17"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:13:17"}
+{"error":"fetch failed","level":"warn","message":"向量检索失败，使用纯关键词模式","timestamp":"2026-09-06 18:13:17"}
+{"error":"","level":"error","message":"ES检索失败，降级到内存搜索","timestamp":"2026-09-06 18:13:24"}
+{"count":0,"level":"info","message":"Nutrition RAG完成","timestamp":"2026-09-06 18:13:24"}
+{"keywords":"帮我查询,我查询今,查询今天,询今天的,今天的数,天的数据,的数据并,数据并分,据并分析,并分析一,分析一下,帮我查,我查询,查询今,询今天,今天的,天的数,的数据,数据并,据并分,并分析,分析一,析一下,帮我,我查,查询,询今,今天,天的,的数,数据,据并,并分,分析,析一,一下,帮,我,查,询,今,天,的,数,据,并,分,析,一,下","level":"debug","message":"内存搜索完成","resultsCount":0,"timestamp":"2026-09-06 18:13:24","topK":10}
+{"category":"nutrition","duration":7425,"level":"info","message":"关键词检索完成（降级模式）","query":"帮我查询今天的数据并分析一下","resultsCount":0,"timestamp":"2026-09-06 18:13:24"}
+{"level":"info","message":"Nutrition推理节点: 生成回复","timestamp":"2026-09-06 18:13:24"}
+{"level":"info","message":"Nutrition推理完成","timestamp":"2026-09-06 18:13:33"}
+{"level":"info","message":"Nutrition Agent完成","timestamp":"2026-09-06 18:13:33"}
+{"agents":["tool_agent","nutrition_agent","fitness_agent"],"level":"info","message":"汇总节点: 整合结果","mode":"sequential","timestamp":"2026-09-06 18:13:33"}
+{"level":"info","message":"汇总完成","responseLength":770,"timestamp":"2026-09-06 18:13:33"}
+{"duration":24959,"executionFlow":["router","router","tool_agent","router","router","tool_agent","nutrition_agent","router","router","tool_agent","router","router","tool_agent","nutrition_agent","aggregator(multi)"],"level":"info","message":"Multi-Agent执行完成","routingDecision":{"agents":["tool_agent","nutrition_agent","fitness_agent"],"mode":"sequential","reasoning":"用户要求'查询今天的数据并分析'，需先由tool_agent查询今日饮食、运动、体重等原始数据；查询结果作为输入，再并行交由nutrition_agent和fitness_agent分别分析饮食健康性和运动有效性。但由于tool_agent的查询是分析的前提，必须先执行，因此整体为sequential模式，其中tool_agent为第一阶段，后续分析阶段逻辑上需并行，但受限于执行调度需在sequential框架下触发两个专家，故标准执行流为：先tool_agent → 再启动nutrition_agent和fitness_agent（即sequential含后续并行子阶段）。根据系统定义，'sequential'模式允许第一阶段输出作为后续多Agent输入，而此处后续分析需同时依赖同一数据源，因此最严谨的调度是：sequential模式，agents列表按执行依赖顺序排列，实际运行时在tool_agent完成后并行调用nutrition_agent和fitness_agent。"},"timestamp":"2026-09-06 18:13:33"}
+{"level":"info","message":"高血糖人群可以吃什么水果","timestamp":"2026-09-06 18:13:34","userId":1}
+{"level":"info","message":"Router节点: 开始LLM路由决策","timestamp":"2026-09-06 18:13:34","userQuery":"高血糖人群可以吃什么水果"}
+{"agents":["nutrition_agent"],"level":"info","message":"路由决策完成","mode":"single","reasoning":"该问题属于营养学领域的专业咨询，聚焦于高血糖人群的水果选择，涉及血糖生成指数（GI）、碳水化合物含量、膳食纤维及临床营养管理原则，无需数据记录或运动分析，因此仅需营养专家（nutrition_agent）独立解答。","timestamp":"2026-09-06 18:13:36"}
+{"agents":["nutrition_agent"],"level":"info","message":"路由条件边: 决策","mode":"single","timestamp":"2026-09-06 18:13:36"}
+{"level":"info","message":"进入Nutrition Agent","timestamp":"2026-09-06 18:13:36"}
+{"level":"info","message":"Nutrition RAG节点: 开始检索","timestamp":"2026-09-06 18:13:36","userQuery":"高血糖人群可以吃什么水果"}
+{"key":"manmanshou:embedding:8h6qpx","level":"debug","message":"内存缓存已设置","timestamp":"2026-09-06 18:13:36","ttl":604800}
+{"level":"debug","message":"Embedding生成成功","provider":"dashscope","textLength":12,"timestamp":"2026-09-06 18:13:36"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:13:36"}
+{"count":0,"level":"info","message":"Nutrition RAG完成","timestamp":"2026-09-06 18:13:36"}
+{"error":"fetch failed","level":"warn","message":"向量检索失败，使用纯关键词模式","timestamp":"2026-09-06 18:13:36"}
+{"keywords":"高血糖人,血糖人群,糖人群可,人群可以,群可以吃,可以吃什,以吃什么,吃什么水,什么水果,高血糖,血糖人,糖人群,人群可,群可以,可以吃,以吃什,吃什么,什么水,么水果,高血,血糖,糖人,人群,群可,可以,以吃,吃什,什么,么水,水果,高,血,糖,人,群,可,以,吃,什,么,水,果","level":"debug","message":"内存搜索完成","resultsCount":0,"timestamp":"2026-09-06 18:13:36","topK":10}
+{"category":"nutrition","duration":239,"level":"info","message":"关键词检索完成（降级模式）","query":"高血糖人群可以吃什么水果","resultsCount":0,"timestamp":"2026-09-06 18:13:36"}
+{"level":"info","message":"Nutrition推理节点: 生成回复","timestamp":"2026-09-06 18:13:36"}
+{"level":"info","message":"Nutrition推理完成","timestamp":"2026-09-06 18:13:55"}
+{"level":"info","message":"Nutrition Agent完成","timestamp":"2026-09-06 18:13:55"}
+{"agents":["nutrition_agent"],"level":"info","message":"汇总节点: 整合结果","mode":"single","timestamp":"2026-09-06 18:13:55"}
+{"duration":20769,"executionFlow":["router","router","nutrition_agent","router","router","nutrition_agent","aggregator(single)"],"level":"info","message":"Multi-Agent执行完成","routingDecision":{"agents":["nutrition_agent"],"mode":"single","reasoning":"该问题属于营养学领域的专业咨询，聚焦于高血糖人群的水果选择，涉及血糖生成指数（GI）、碳水化合物含量、膳食纤维及临床营养管理原则，无需数据记录或运动分析，因此仅需营养专家（nutrition_agent）独立解答。"},"timestamp":"2026-09-06 18:13:55"}
+{"level":"info","message":"膝盖不好的人怎么减肥","timestamp":"2026-09-06 18:13:56","userId":1}
+{"level":"info","message":"Router节点: 开始LLM路由决策","timestamp":"2026-09-06 18:13:56","userQuery":"膝盖不好的人怎么减肥"}
+{"agents":["nutrition_agent","fitness_agent"],"level":"info","message":"路由决策完成","mode":"parallel","reasoning":"该问题涉及两个核心维度：1) 膝盖不适限制了高冲击运动选择，需运动教练（fitness_agent）提供低冲击、护膝的减脂运动方案；2) 减肥本质依赖热量缺口，需营养专家（nutrition_agent）设计保护关节、支持减脂且抗炎的饮食策略（如补充Omega-3、维生素D、优质蛋白）。两者无严格先后依赖，可并行分析，最终整合为综合建议。无需工具操作（未涉及记录/查询历史数据），故不调用tool_agent。","timestamp":"2026-09-06 18:13:59"}
+{"agents":["nutrition_agent","fitness_agent"],"level":"info","message":"路由条件边: 决策","mode":"parallel","timestamp":"2026-09-06 18:13:59"}
+{"level":"warn","message":"parallel模式暂不支持，降级为sequential","timestamp":"2026-09-06 18:13:59"}
+{"level":"info","message":"进入Nutrition Agent","timestamp":"2026-09-06 18:13:59"}
+{"level":"info","message":"Nutrition RAG节点: 开始检索","timestamp":"2026-09-06 18:13:59","userQuery":"膝盖不好的人怎么减肥"}
+{"key":"manmanshou:embedding:dckd2p","level":"debug","message":"内存缓存已设置","timestamp":"2026-09-06 18:13:59","ttl":604800}
+{"level":"debug","message":"Embedding生成成功","provider":"dashscope","textLength":10,"timestamp":"2026-09-06 18:13:59"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:14:00"}
+{"count":0,"level":"info","message":"Nutrition RAG完成","timestamp":"2026-09-06 18:14:00"}
+{"level":"info","message":"Nutrition推理节点: 生成回复","timestamp":"2026-09-06 18:14:00"}
+{"error":"fetch failed","level":"warn","message":"向量检索失败，使用纯关键词模式","timestamp":"2026-09-06 18:14:00"}
+{"keywords":"膝盖不好,盖不好的,不好的人,好的人怎,的人怎么,人怎么减,怎么减肥,膝盖不,盖不好,不好的,好的人,的人怎,人怎么,怎么减,么减肥,膝盖,盖不,不好,好的,的人,人怎,怎么,么减,减肥,膝,盖,不,好,的,人,怎,么,减,肥","level":"debug","message":"内存搜索完成","resultsCount":0,"timestamp":"2026-09-06 18:14:00","topK":10}
+{"category":"nutrition","duration":228,"level":"info","message":"关键词检索完成（降级模式）","query":"膝盖不好的人怎么减肥","resultsCount":0,"timestamp":"2026-09-06 18:14:00"}
+{"level":"info","message":"Nutrition推理完成","timestamp":"2026-09-06 18:14:24"}
+{"level":"info","message":"Nutrition Agent完成","timestamp":"2026-09-06 18:14:24"}
+{"agents":["nutrition_agent","fitness_agent"],"level":"info","message":"汇总节点: 整合结果","mode":"parallel","timestamp":"2026-09-06 18:14:24"}
+{"level":"info","message":"汇总完成","responseLength":1547,"timestamp":"2026-09-06 18:14:24"}
+{"duration":28640,"executionFlow":["router","router","nutrition_agent","router","router","nutrition_agent","aggregator(multi)"],"level":"info","message":"Multi-Agent执行完成","routingDecision":{"agents":["nutrition_agent","fitness_agent"],"mode":"parallel","reasoning":"该问题涉及两个核心维度：1) 膝盖不适限制了高冲击运动选择，需运动教练（fitness_agent）提供低冲击、护膝的减脂运动方案；2) 减肥本质依赖热量缺口，需营养专家（nutrition_agent）设计保护关节、支持减脂且抗炎的饮食策略（如补充Omega-3、维生素D、优质蛋白）。两者无严格先后依赖，可并行分析，最终整合为综合建议。无需工具操作（未涉及记录/查询历史数据），故不调用tool_agent。"},"timestamp":"2026-09-06 18:14:24"}
+{"level":"info","message":"查询我今天吃的食物并给营养建议","timestamp":"2026-09-06 18:14:25","userId":1}
+{"level":"info","message":"Router节点: 开始LLM路由决策","timestamp":"2026-09-06 18:14:25","userQuery":"查询我今天吃的食物并给营养建议"}
+{"agents":["tool_agent","nutrition_agent"],"level":"info","message":"路由决策完成","mode":"sequential","reasoning":"用户需求包含两个明确步骤：首先需要查询今天摄入的食物（属于数据查询操作，必须由tool_agent执行）；然后基于查询结果给出营养建议（需营养专业知识，由nutrition_agent完成）。由于营养建议依赖于查询到的具体食物数据，二者存在强依赖关系，必须串行执行，因此选择sequential模式。","timestamp":"2026-09-06 18:14:28"}
+{"agents":["tool_agent","nutrition_agent"],"level":"info","message":"路由条件边: 决策","mode":"sequential","timestamp":"2026-09-06 18:14:28"}
+{"level":"info","message":"进入Tool Agent","timestamp":"2026-09-06 18:14:28"}
+{"level":"info","message":"Tool调用节点: 分析需要的工具","timestamp":"2026-09-06 18:14:28","userQuery":"查询我今天吃的食物并给营养建议"}
+{"hasToolCalls":true,"level":"info","message":"工具调用分析完成","timestamp":"2026-09-06 18:14:28","toolCount":1}
+{"count":1,"level":"info","message":"Tool执行节点: 执行工具","timestamp":"2026-09-06 18:14:28"}
+{"args":{},"level":"info","message":"执行工具","timestamp":"2026-09-06 18:14:28","tool":"query_today"}
+{"level":"info","message":"查询今日汇总","timestamp":"2026-09-06 18:14:28","totalCaloriesIn":0,"totalCaloriesOut":0,"userId":1}
+{"level":"info","message":"工具执行成功","timestamp":"2026-09-06 18:14:28","tool":"query_today"}
+{"level":"info","message":"Tool响应节点: 生成回复","timestamp":"2026-09-06 18:14:28"}
+{"level":"info","message":"Tool响应生成完成","timestamp":"2026-09-06 18:14:32"}
+{"hasResults":true,"level":"info","message":"Tool Agent完成","timestamp":"2026-09-06 18:14:32"}
+{"0":"n","1":"u","10":"a","11":"g","12":"e","13":"n","14":"t","2":"t","3":"r","4":"i","5":"t","6":"i","7":"o","8":"n","9":"_","level":"info","message":"Sequential第二步: 路由到","timestamp":"2026-09-06 18:14:32"}
+{"level":"info","message":"进入Nutrition Agent","timestamp":"2026-09-06 18:14:32"}
+{"level":"info","message":"Nutrition RAG节点: 开始检索","timestamp":"2026-09-06 18:14:32","userQuery":"查询我今天吃的食物并给营养建议"}
+{"key":"manmanshou:embedding:dpmofp","level":"debug","message":"内存缓存已设置","timestamp":"2026-09-06 18:14:33","ttl":604800}
+{"level":"debug","message":"Embedding生成成功","provider":"dashscope","textLength":15,"timestamp":"2026-09-06 18:14:33"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:14:33"}
+{"count":0,"level":"info","message":"Nutrition RAG完成","timestamp":"2026-09-06 18:14:33"}
+{"error":"fetch failed","level":"warn","message":"向量检索失败，使用纯关键词模式","timestamp":"2026-09-06 18:14:33"}
+{"keywords":"查询我今,询我今天,我今天吃,今天吃的,天吃的食,吃的食物,的食物并,食物并给,物并给营,并给营养,给营养建,营养建议,查询我,询我今,我今天,今天吃,天吃的,吃的食,的食物,食物并,物并给,并给营,给营养,营养建,养建议,查询,询我,我今,今天,天吃,吃的,的食,食物,物并,并给,给营,营养,养建,建议,查,询,我,今,天,吃,的,食,物,并,给,营,养,建,议","level":"debug","message":"内存搜索完成","resultsCount":0,"timestamp":"2026-09-06 18:14:33","topK":10}
+{"category":"nutrition","duration":259,"level":"info","message":"关键词检索完成（降级模式）","query":"查询我今天吃的食物并给营养建议","resultsCount":0,"timestamp":"2026-09-06 18:14:33"}
+{"level":"info","message":"Nutrition推理节点: 生成回复","timestamp":"2026-09-06 18:14:33"}
+{"level":"info","message":"Nutrition推理完成","timestamp":"2026-09-06 18:14:43"}
+{"level":"info","message":"Nutrition Agent完成","timestamp":"2026-09-06 18:14:43"}
+{"agents":["tool_agent","nutrition_agent"],"level":"info","message":"汇总节点: 整合结果","mode":"sequential","timestamp":"2026-09-06 18:14:43"}
+{"level":"info","message":"汇总完成","responseLength":985,"timestamp":"2026-09-06 18:14:43"}
+{"duration":18164,"executionFlow":["router","router","tool_agent","router","router","tool_agent","nutrition_agent","router","router","tool_agent","router","router","tool_agent","nutrition_agent","aggregator(multi)"],"level":"info","message":"Multi-Agent执行完成","routingDecision":{"agents":["tool_agent","nutrition_agent"],"mode":"sequential","reasoning":"用户需求包含两个明确步骤：首先需要查询今天摄入的食物（属于数据查询操作，必须由tool_agent执行）；然后基于查询结果给出营养建议（需营养专业知识，由nutrition_agent完成）。由于营养建议依赖于查询到的具体食物数据，二者存在强依赖关系，必须串行执行，因此选择sequential模式。"},"timestamp":"2026-09-06 18:14:43"}
+{"level":"info","message":"鸡蛋的营养价值","timestamp":"2026-09-06 18:14:44","userId":1}
+{"level":"info","message":"Router节点: 开始LLM路由决策","timestamp":"2026-09-06 18:14:44","userQuery":"鸡蛋的营养价值"}
+{"agents":["nutrition_agent"],"level":"info","message":"路由决策完成","mode":"single","reasoning":"用户询问的是‘鸡蛋的营养价值’，属于纯粹的营养学知识咨询问题，无需数据记录或运动分析，营养专家（nutrition_agent）可独立、直接提供专业解答。","timestamp":"2026-09-06 18:14:46"}
+{"agents":["nutrition_agent"],"level":"info","message":"路由条件边: 决策","mode":"single","timestamp":"2026-09-06 18:14:46"}
+{"level":"info","message":"进入Nutrition Agent","timestamp":"2026-09-06 18:14:46"}
+{"level":"info","message":"Nutrition RAG节点: 开始检索","timestamp":"2026-09-06 18:14:46","userQuery":"鸡蛋的营养价值"}
+{"key":"manmanshou:embedding:lsnyaz","level":"debug","message":"内存缓存已设置","timestamp":"2026-09-06 18:14:46","ttl":604800}
+{"level":"debug","message":"Embedding生成成功","provider":"dashscope","textLength":7,"timestamp":"2026-09-06 18:14:46"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:14:46"}
+{"count":0,"level":"info","message":"Nutrition RAG完成","timestamp":"2026-09-06 18:14:46"}
+{"error":"fetch failed","level":"warn","message":"向量检索失败，使用纯关键词模式","timestamp":"2026-09-06 18:14:46"}
+{"keywords":"鸡蛋的营,蛋的营养,的营养价,营养价值,鸡蛋的,蛋的营,的营养,营养价,养价值,鸡蛋,蛋的,的营,营养,养价,价值,鸡,蛋,的,营,养,价,值","level":"debug","message":"内存搜索完成","resultsCount":0,"timestamp":"2026-09-06 18:14:46","topK":10}
+{"category":"nutrition","duration":263,"level":"info","message":"关键词检索完成（降级模式）","query":"鸡蛋的营养价值","resultsCount":0,"timestamp":"2026-09-06 18:14:46"}
+{"level":"info","message":"Nutrition推理节点: 生成回复","timestamp":"2026-09-06 18:14:46"}
+{"level":"info","message":"Nutrition推理完成","timestamp":"2026-09-06 18:15:03"}
+{"level":"info","message":"Nutrition Agent完成","timestamp":"2026-09-06 18:15:03"}
+{"agents":["nutrition_agent"],"level":"info","message":"汇总节点: 整合结果","mode":"single","timestamp":"2026-09-06 18:15:03"}
+{"duration":18222,"executionFlow":["router","router","nutrition_agent","router","router","nutrition_agent","aggregator(single)"],"level":"info","message":"Multi-Agent执行完成","routingDecision":{"agents":["nutrition_agent"],"mode":"single","reasoning":"用户询问的是‘鸡蛋的营养价值’，属于纯粹的营养学知识咨询问题，无需数据记录或运动分析，营养专家（nutrition_agent）可独立、直接提供专业解答。"},"timestamp":"2026-09-06 18:15:03"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 18:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 19:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 20:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 21:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 22:16:25"}
+{"filename":"D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\metrics-2026-09-06.json","level":"info","message":"指标已保存","timestamp":"2026-09-06 23:16:25"}
