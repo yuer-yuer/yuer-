@@ -27,7 +27,8 @@
       "Bash(node test-multi-agent.js)",
       "Bash(curl -X POST http://localhost:3000/api/chat-multi-agent -H \"Content-Type: application/json\" -d \"{\\\\\"message\\\\\":\\\\\"减肥期间可以吃鸡蛋吗？\\\\\",\\\\\"userId\\\\\":1}\")",
       "Bash(node test-react-agents.js)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

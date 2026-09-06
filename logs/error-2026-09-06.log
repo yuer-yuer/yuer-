@@ -1,0 +1,6 @@
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:13:17"}
+{"error":"","level":"error","message":"ES检索失败，降级到内存搜索","timestamp":"2026-09-06 18:13:24"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:13:36"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:14:00"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:14:33"}
+{"error":"fetch failed","level":"error","message":"向量检索失败","timestamp":"2026-09-06 18:14:46"}

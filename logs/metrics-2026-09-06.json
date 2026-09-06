@@ -20,9 +20,9 @@
     "successRate": 0
   },
   "rag": {
-    "totalQueries": 0,
+    "totalQueries": 5,
     "avgResultsCount": 0,
-    "avgDuration": 0
+    "avgDuration": 1682.8
   },
   "performance": {
     "avgResponseTime": 0,
