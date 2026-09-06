@@ -37,16 +37,35 @@ class AgentGraph {
         intent: null,
         userId: input.userId,
         sessionId: input.sessionId, // 新增：传递sessionId
+        forceAgent: input.forceAgent, // 新增：强制Agent
       };
 
       logger.info('Agent流程开始', {
         userId: input.userId,
         sessionId: input.sessionId,
-        message: input.message
+        message: input.message,
+        forceAgent: input.forceAgent
       });
+      console.log('🔍 DEBUG - input.forceAgent:', input.forceAgent);
+      console.log('🔍 DEBUG - typeof forceAgent:', typeof input.forceAgent);
 
-      // 2. 意图分类
-      state = await this.nodes.classifier(state);
+      // 2. 意图分类（如果指定了强制Agent则跳过分类）
+      if (input.forceAgent) {
+        console.log('✅ 进入forceAgent分支');
+        // 强制使用指定的Agent
+        const agentMap = {
+          'nutrition_agent': 'nutrition',
+          'fitness_agent': 'fitness',
+          'general_agent': 'general'
+        };
+        state.intent = agentMap[input.forceAgent] || input.forceAgent;
+        console.log('🔍 设置intent为:', state.intent);
+        logger.info('强制使用Agent', { agent: input.forceAgent, intent: state.intent });
+      } else {
+        console.log('❌ 进入自动分类分支');
+        // 自动分类意图
+        state = await this.nodes.classifier(state);
+      }
 
       // 3. 根据意图路由到对应的Agent
       switch (state.intent) {

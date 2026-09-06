@@ -62,7 +62,7 @@ function loadKnowledgeFiles() {
 }
 
 // 文档分块
-function chunkDocument(content, filename, category) {
+function chunkDocument(content, filename, category, startId) {
   // 按双换行符分段落
   const paragraphs = content
     .split('\n\n')
@@ -70,7 +70,8 @@ function chunkDocument(content, filename, category) {
     .filter(p => p.length > 50); // 过滤太短的段落
 
   return paragraphs.map((para, idx) => ({
-    id: `${filename.replace('.md', '')}_chunk_${idx}`,
+    id: startId + idx, // 使用数字ID
+    stringId: `${filename.replace('.md', '')}_chunk_${idx}`, // 保留字符串ID用于调试
     content: para,
     metadata: {
       source: filename,
@@ -101,8 +102,13 @@ async function vectorizeAndStore(documents) {
       },
     }));
 
-    // 存储到Qdrant
-    await qdrantService.upsert(points);
+    // 分批存储到Qdrant（每批50个）
+    const batchSize = 50;
+    for (let i = 0; i < points.length; i += batchSize) {
+      const batch = points.slice(i, i + batchSize);
+      await qdrantService.upsert(batch);
+      console.log(`  已插入 ${Math.min(i + batchSize, points.length)}/${points.length}`);
+    }
 
     console.log(`✅ 已向量化并存储 ${documents.length} 个文档块`);
     return true;
@@ -144,11 +150,13 @@ async function main() {
     // 3. 处理每个文件
     console.log('\n处理知识库文件...');
     let allChunks = [];
+    let currentId = 1; // 从1开始的数字ID
 
     for (const file of files) {
       const content = fs.readFileSync(file.path, 'utf-8');
-      const chunks = chunkDocument(content, file.filename, file.category);
+      const chunks = chunkDocument(content, file.filename, file.category, currentId);
       allChunks.push(...chunks);
+      currentId += chunks.length; // 递增ID
 
       console.log(`  ${file.filename}: ${chunks.length} 个块`);
     }

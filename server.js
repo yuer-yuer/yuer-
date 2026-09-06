@@ -1405,7 +1405,7 @@ const { sessionManager } = require('./session');
 // Agent对话接口（支持会话）
 app.post('/api/agent/chat', async (req, res) => {
   try {
-    const { message, userId, sessionId } = req.body;
+    const { message, userId, sessionId, forceAgent } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: '消息不能为空' });
@@ -1429,11 +1429,12 @@ app.post('/api/agent/chat', async (req, res) => {
     // 添加用户消息到会话
     sessionManager.addMessage(activeSessionId, 'user', message);
 
-    // 调用Agent Graph
+    // 调用Agent Graph（传递forceAgent参数）
     const result = await agentGraph.invoke({
       message,
       userId: userId || req.session.userId || 'anonymous',
       sessionId: activeSessionId,
+      forceAgent: forceAgent || null,  // 🔥 关键修复：传递forceAgent
     });
 
     // 添加AI回复到会话

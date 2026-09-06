@@ -43,6 +43,10 @@ const AppState = {
     nudgeTimer: null,
     nudgeInterval: null,
     lastNudgeAt: 0,
+    selectedAgent: null,  // null = 自动路由, 'nutrition_agent', 'fitness_agent'
+    sessionId: null,      // 会话ID
+    lastAgent: null,      // 最后使用的Agent
+    lastKnowledge: 0,     // 最后使用的知识条数
   },
   dailyPlan: {
     tasks: [],
@@ -1777,8 +1781,20 @@ function renderAiCoachMessages() {
 
 function renderAiCoachMessage(message) {
   const isUser = message.role === 'user';
+  const isSystem = message.role === 'system';
   const avatar = isUser ? (AppState.user?.username || '我').slice(0, 1).toUpperCase() : '🤖';
   const isTyping = !isUser && message.streaming && !message.content;
+
+  // 系统提示（Agent切换）
+  if (isSystem) {
+    return `
+      <div class="ai-coach-system-message">
+        <div class="system-badge">⚡ 系统提示</div>
+        <div class="system-content">${escapeHtml(message.content)}</div>
+      </div>
+    `;
+  }
+
   return `
     <div class="ai-coach-row ${isUser ? 'user' : 'assistant'}">
       ${isUser ? '' : `<span class="ai-coach-avatar">${avatar}</span>`}
@@ -1812,35 +1828,81 @@ function sendAiCoachQuick(text) {
   sendAiCoachMessage();
 }
 
+// Agent选择器功能
+window.selectAgent = function(agent) {
+  // 保存选择的Agent ('auto', 'nutrition_agent', 'fitness_agent')
+  AppState.aiCoach.selectedAgent = agent === 'auto' ? null : agent;
+
+  // 切换Agent时重置会话
+  AppState.aiCoach.sessionId = null;
+
+  // 更新按钮样式
+  document.querySelectorAll('.agent-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const selectedBtn = document.querySelector(`.agent-btn[data-agent="${agent}"]`);
+  if (selectedBtn) {
+    selectedBtn.classList.add('active');
+  }
+
+  // 显示提示消息
+  const agentNames = {
+    'auto': '智能路由模式',
+    'nutrition_agent': '营养专家模式',
+    'fitness_agent': '健身教练模式'
+  };
+
+  const agentName = agentNames[agent] || '智能路由模式';
+
+  // 在对话框中添加系统提示
+  AppState.aiCoach.messages.push({
+    role: 'system',
+    content: `已切换到【${agentName}】`,
+    timestamp: Date.now()
+  });
+
+  renderAiCoachMessages();
+  saveAiCoachMessages();
+};
+
+// Multi-Agent API调用
 async function streamAiCoachReply(message, history, onChunk) {
-  const res = await fetch('/api/ai/coach-chat?stream=1', {
+  const res = await fetch('/api/agent/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({
+      message,
+      userId: AppState.userId || 'anonymous',
+      sessionId: AppState.aiCoach.sessionId || null,
+      forceAgent: AppState.aiCoach.selectedAgent || null
+    }),
   });
   if (res.status === 401) {
     showAuthPage();
     return '';
   }
-  if (!res.ok || !res.body) throw new Error('coach stream failed');
+  if (!res.ok) throw new Error('coach chat failed');
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let reply = '';
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    if (!chunk) continue;
-    reply += chunk;
-    onChunk(chunk);
+  const data = await res.json();
+
+  // 保存会话ID
+  AppState.aiCoach.sessionId = data.sessionId;
+
+  // 保存Agent信息到消息
+  if (data.agent) {
+    AppState.aiCoach.lastAgent = data.agent;
+    AppState.aiCoach.lastKnowledge = data.knowledgeUsed || 0;
   }
-  const tail = decoder.decode();
-  if (tail) {
-    reply += tail;
-    onChunk(tail);
+
+  // 模拟流式输出效果
+  const reply = data.reply || '';
+  const words = reply.split('');
+  for (let i = 0; i < words.length; i++) {
+    onChunk(words[i]);
+    await new Promise(resolve => setTimeout(resolve, 20));
   }
+
   return reply;
 }
 

@@ -8,7 +8,26 @@
       "Bash(docker compose *)",
       "Bash(npm install *)",
       "Bash(systeminfo)",
-      "Bash(findstr /C:\"OS Name\" /C:\"OS Version\" /C:\"System Type\")"
+      "Bash(findstr /C:\"OS Name\" /C:\"OS Version\" /C:\"System Type\")",
+      "Bash(node -e ' *)",
+      "Bash(powershell.exe -Command \"\\(Invoke-WebRequest -Uri http://localhost:6333/collections/manmanshou_knowledge -UseBasicParsing | ConvertFrom-Json\\).result.points_count\")",
+      "Bash(node scripts/test_insert.js)",
+      "Bash(node server-langgraph.js)",
+      "Bash(npm list *)",
+      "Bash(npm uninstall *)",
+      "Bash(curl -X POST http://localhost:3000/api/chat-langgraph -H \"Content-Type: application/json\" -d \"{\\\\\"message\\\\\": \\\\\"你好\\\\\"}\")",
+      "Bash(curl -X POST http://localhost:3000/api/chat-langgraph -H \"Content-Type: application/json\" -d '{\"message\": \"你好\"}')",
+      "Bash(sqlite3 \"d:\\\\科林冲刺\\\\项目班\\\\AI\\\\AIcode\\\\慢慢瘦\\\\data\\\\database.sqlite\" \".tables\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //PID 21988 //F)",
+      "Bash(curl -X POST http://localhost:3000/api/chat-langgraph -H 'Content-Type: application/json' -d '{\"message\": \"我今天早餐吃了一个鸡蛋和一碗粥\", \"userId\": 1}')",
+      "Bash(curl -X POST http://localhost:3000/api/chat-langgraph -H 'Content-Type: application/json; charset=utf-8' -d '{\"message\": \"I ate an egg and porridge for breakfast today\", \"userId\": 1}')",
+      "Bash(node test-tool-calling.js)",
+      "Bash(node server-multi-agent.js)",
+      "Bash(node test-multi-agent.js)",
+      "Bash(curl -X POST http://localhost:3000/api/chat-multi-agent -H \"Content-Type: application/json\" -d \"{\\\\\"message\\\\\":\\\\\"减肥期间可以吃鸡蛋吗？\\\\\",\\\\\"userId\\\\\":1}\")",
+      "Bash(node test-react-agents.js)",
+      "Bash(git add *)"
     ]
   }
 }

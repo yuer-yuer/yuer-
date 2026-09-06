@@ -5,7 +5,7 @@ module.exports = {
     url: process.env.QDRANT_URL || 'http://localhost:6333',
     apiKey: process.env.QDRANT_API_KEY || undefined, // 云服务需要
     collectionName: 'manmanshou_knowledge',
-    vectorSize: 1024, // 智谱embedding-2维度
+    vectorSize: 1536, // 智谱embedding-2维度是1536
     distance: 'Cosine',
   },
 

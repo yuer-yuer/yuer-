@@ -9,6 +9,7 @@ class QdrantService {
     this.client = new QdrantClient({
       url: ragConfig.qdrant.url,
       apiKey: ragConfig.qdrant.apiKey, // 云服务需要
+      checkCompatibility: false, // 禁用版本兼容性检查
     });
 
     this.collectionName = ragConfig.qdrant.collectionName;
@@ -51,13 +52,15 @@ class QdrantService {
    */
   async upsert(points) {
     try {
+      // 格式化数据点
+      const formattedPoints = points.map((point, idx) => ({
+        id: point.id || `point_${idx}`,
+        vector: point.vector,
+        payload: point.metadata || {},
+      }));
+
       await this.client.upsert(this.collectionName, {
-        wait: true,
-        points: points.map((point, idx) => ({
-          id: point.id || idx,
-          vector: point.vector,
-          payload: point.metadata || {},
-        })),
+        points: formattedPoints,
       });
 
       logger.info(`已插入 ${points.length} 个向量到Qdrant`);
@@ -75,9 +78,9 @@ class QdrantService {
     try {
       const startTime = Date.now();
 
-      // 兼容不同版本的API调用方式
+      // 使用新版API的query方法
       const searchParams = {
-        vector,
+        query: vector,
         limit: topK,
         with_payload: true,
       };
@@ -86,12 +89,12 @@ class QdrantService {
         searchParams.filter = filter;
       }
 
-      const results = await this.client.search(this.collectionName, searchParams);
+      const results = await this.client.query(this.collectionName, searchParams);
 
       const duration = Date.now() - startTime;
-      logger.debug('Qdrant检索完成', { topK, resultsCount: results.length, duration });
+      logger.debug('Qdrant检索完成', { topK, resultsCount: results.points.length, duration });
 
-      return results.map(result => ({
+      return results.points.map(result => ({
         id: result.id,
         score: result.score,
         content: result.payload?.content || '',
