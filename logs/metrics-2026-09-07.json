@@ -1,0 +1,32 @@
+{
+  "llm": {
+    "totalCalls": 0,
+    "cachedCalls": 0,
+    "tokensUsed": 0,
+    "tokensSaved": 0,
+    "totalCost": 0,
+    "costSaved": 0,
+    "cacheHitRate": 0
+  },
+  "agents": {
+    "totalCalls": 0,
+    "byAgent": {}
+  },
+  "tools": {
+    "totalCalls": 0,
+    "successCalls": 0,
+    "failedCalls": 0,
+    "byTool": {},
+    "successRate": 0
+  },
+  "rag": {
+    "totalQueries": 5,
+    "avgResultsCount": 0,
+    "avgDuration": 1682.8
+  },
+  "performance": {
+    "avgResponseTime": 0,
+    "p95ResponseTime": 0,
+    "responseTimes": []
+  }
+}

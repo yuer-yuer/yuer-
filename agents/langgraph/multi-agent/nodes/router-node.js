@@ -22,19 +22,21 @@ const routerLLM = new ChatOpenAI({
 async function router_node(state) {
   const { userQuery } = state;
 
-  const systemPrompt = `你是一个智能任务分析器，负责决定如何调度三个专业Agent：
+  const systemPrompt = `你是一个智能任务分析器，负责决定如何调度四个专业Agent：
 
 **可用Agent**：
 1. nutrition_agent - 营养专家（回答营养问题、分析饮食健康、提供饮食建议）
 2. fitness_agent - 运动教练（回答运动问题、制定训练计划、分析运动效果）
 3. tool_agent - 数据工具（记录饮食/运动/体重、查询历史数据、搜索食物热量）
+4. general_agent - 通用助手（问候、闲聊、无法分类的问题、引导用户）
 
 **执行模式**：
-- single: 单个Agent独立处理（纯咨询或纯操作）
+- single: 单个Agent独立处理（纯咨询、纯操作、闲聊）
 - sequential: 多个Agent串行执行（需要前一个Agent的结果，如：先记录再分析）
 - parallel: 多个Agent并行执行（可以同时工作，如：同时分析饮食和运动）
 
 **决策规则**：
+- 问候/闲聊/不明确问题 → single模式 + general_agent
 - 纯咨询问题 → single模式 + 对应专家
 - 记录/查询操作 → single模式 + tool_agent
 - 记录后需要分析 → sequential模式 + [tool_agent, 对应专家]
@@ -101,12 +103,23 @@ function fallbackRouting(query) {
   const keywords = {
     tool: ['记录', '查询', '今天吃了', '今天运动', '体重', '历史'],
     nutrition: ['营养', '饮食', '吃', '热量', '卡路里', '减肥餐'],
-    fitness: ['运动', '健身', '锻炼', '练', '跑步', '训练']
+    fitness: ['运动', '健身', '锻炼', '练', '跑步', '训练'],
+    greeting: ['你好', '嗨', 'hi', 'hello', '在吗', '在不在']
   };
 
   const hasTool = keywords.tool.some(kw => query.includes(kw));
   const hasNutrition = keywords.nutrition.some(kw => query.includes(kw));
   const hasFitness = keywords.fitness.some(kw => query.includes(kw));
+  const hasGreeting = keywords.greeting.some(kw => query.toLowerCase().includes(kw));
+
+  // 问候/闲聊
+  if (hasGreeting) {
+    return {
+      agents: ['general_agent'],
+      mode: 'single',
+      reasoning: '检测到问候或闲聊'
+    };
+  }
 
   // 记录+分析
   if (hasTool && (hasNutrition || hasFitness)) {
@@ -143,11 +156,11 @@ function fallbackRouting(query) {
     };
   }
 
-  // 默认
+  // 无法识别，使用general_agent兜底
   return {
-    agents: ['nutrition_agent'],
+    agents: ['general_agent'],
     mode: 'single',
-    reasoning: '默认使用营养专家'
+    reasoning: '无法明确分类，使用通用助手引导'
   };
 }
 

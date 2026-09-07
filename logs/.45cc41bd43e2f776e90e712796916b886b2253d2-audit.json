@@ -26,9 +26,14 @@
             "hash": "2b262d47ba3f23cdeda78f2c4491557cb9db2c3ba6c53f770aaa22758561bd9c"
         },
         {
-            "date": 1788689582525,
+            "date": 1788624985260,
             "name": "D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\app-2026-09-06.log",
-            "hash": "1e78521f9226a2dac3b26473a9b10d2eb41e43fe928af22334c469af5e40b9ec"
+            "hash": "0cdbf17fbc2129d1a3a2b814842417dca7b69a63466ee8dd5f66383f428f613d"
+        },
+        {
+            "date": 1788711385469,
+            "name": "D:\\科林冲刺\\项目班\\AI\\AIcode\\慢慢瘦\\logs\\app-2026-09-07.log",
+            "hash": "5801dc416300c12b8950561d14cebfd6e568b76e99912dcf7cf5e654a2470d49"
         }
     ],
     "hashType": "sha256"

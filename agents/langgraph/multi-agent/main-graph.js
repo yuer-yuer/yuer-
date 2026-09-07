@@ -8,7 +8,8 @@ const { router_node } = require('./nodes/router-node');
 const {
   nutrition_agent_node,
   fitness_agent_node,
-  tool_agent_node
+  tool_agent_node,
+  general_agent_node
 } = require('./nodes/agent-nodes');
 const { aggregator_node } = require('./nodes/aggregator-node');
 const logger = require('../../../utils/logger');
@@ -24,6 +25,7 @@ function createMultiAgentGraph() {
   workflow.addNode('nutrition_agent', nutrition_agent_node);
   workflow.addNode('fitness_agent', fitness_agent_node);
   workflow.addNode('tool_agent', tool_agent_node);
+  workflow.addNode('general_agent', general_agent_node);
   workflow.addNode('aggregator', aggregator_node);
 
   // 设置入口点
@@ -39,7 +41,7 @@ function createMultiAgentGraph() {
 
       // single模式 - 直接路由到对应Agent
       if (mode === 'single') {
-        return agents[0]; // 'nutrition_agent' / 'fitness_agent' / 'tool_agent'
+        return agents[0]; // 'nutrition_agent' / 'fitness_agent' / 'tool_agent' / 'general_agent'
       }
 
       // sequential模式 - 路由到第一个Agent
@@ -53,8 +55,8 @@ function createMultiAgentGraph() {
         return agents[0];
       }
 
-      // 默认
-      return 'nutrition_agent';
+      // 默认 - 如果无法判断，使用general_agent兜底
+      return 'general_agent';
     }
   );
 
@@ -78,6 +80,7 @@ function createMultiAgentGraph() {
   // 所有Agent完成后都到汇总节点
   workflow.addEdge('nutrition_agent', 'aggregator');
   workflow.addEdge('fitness_agent', 'aggregator');
+  workflow.addEdge('general_agent', 'aggregator');
 
   // 汇总后结束
   workflow.addEdge('aggregator', END);

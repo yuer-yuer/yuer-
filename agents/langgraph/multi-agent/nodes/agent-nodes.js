@@ -5,6 +5,7 @@
 const { createNutritionSubGraph } = require('../subgraphs/nutrition-subgraph');
 const { createFitnessSubGraph } = require('../subgraphs/fitness-subgraph');
 const { createToolSubGraph } = require('../subgraphs/tool-subgraph');
+const { createGeneralSubGraph } = require('../subgraphs/general-subgraph');
 const logger = require('../../../../utils/logger');
 
 /**
@@ -132,8 +133,49 @@ async function tool_agent_node(state) {
   }
 }
 
+/**
+ * General Agent节点
+ */
+async function general_agent_node(state) {
+  try {
+    logger.info('进入General Agent');
+
+    const generalGraph = createGeneralSubGraph();
+
+    const result = await generalGraph.invoke({
+      input: {
+        userQuery: state.userQuery,
+        sharedContext: state.sharedContext
+      }
+    });
+
+    logger.info('General Agent完成');
+
+    return {
+      agentResults: {
+        ...state.agentResults,
+        general: result.response
+      },
+      messages: state.messages.concat([
+        { role: 'assistant', agent: 'general', content: result.response }
+      ]),
+      executionFlow: state.executionFlow.concat(['general_agent'])
+    };
+  } catch (error) {
+    logger.error('General Agent失败', { error: error.message });
+    return {
+      agentResults: {
+        ...state.agentResults,
+        general: '通用对话服务暂时不可用'
+      },
+      executionFlow: state.executionFlow.concat(['general_agent(error)'])
+    };
+  }
+}
+
 module.exports = {
   nutrition_agent_node,
   fitness_agent_node,
-  tool_agent_node
+  tool_agent_node,
+  general_agent_node
 };
